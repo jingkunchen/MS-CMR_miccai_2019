@@ -195,11 +195,11 @@ def train(images_label, images_unlabel, generator, discriminator, adversarial_mo
 
             generatored_batch_images_label = generator.predict(batch_images_label)
             generatored_images_unlabel = generator.predict(images_unlabel)
-            # Update D network, minimize real images inputs->D-> ones, noisy z->R->D->zeros loss.
+            # Update D network, minimize label images inputs->->R->D-> ones,  unlabel images->R->D->zeros loss.
             d_loss_real = discriminator.train_on_batch(generatored_batch_images_label, ones)
             d_loss_fake = discriminator.train_on_batch(generatored_images_unlabel, zeros)
 
-            # Update R network twice, minimize noisy z->R->D->ones and reconstruction loss.
+            # Update R network, unlabel images->R->D->ones and reconstruction loss.
             g_loss = adversarial_model.train_on_batch(generatored_images_unlabel, [generatored_batch_images_label, ones])
             plot_epochs.append(epoch+idx/batch_idxs)
             plot_g_recon_losses.append(g_loss[1])
@@ -244,7 +244,7 @@ def main():
     generator.summary()
     discriminator.summary()
     adversarial_model.summary()
-    
+
     # train
     train(images_label, images_unlabel, generator, discriminator, adversarial_model)
 
