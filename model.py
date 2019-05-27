@@ -77,7 +77,7 @@ def conv_bn_relu(nd, k=3, inputs=None):
     relu = Activation('relu')(conv)
     return relu
 
-def build_generator(img_shape):
+def build_generator(input_shape):
     """Build the generator/G network
     
     Arguments:
@@ -87,7 +87,7 @@ def build_generator(img_shape):
         [Tensor] -- Network output tensors.
     """
     # u_net generator
-    image = Input(shape = img_shape)
+    image = Input(shape = input_shape)
     concat_axis = -1
     # down sampling
     # 1
@@ -220,7 +220,6 @@ def train(images_label, images_unlabel, generator, discriminator, adversarial_mo
                     './{}/train_unlabel_{:02d}_{:04d}.png'.format(Sample_dir, epoch, idx))
         save(epoch, adversarial_model)
 
-
 def main():
     # load image
     images = np.load('images.npy')
@@ -246,9 +245,6 @@ def main():
     adversarial_model.summary()
     # train
     train(images, masks, generator, discriminator, adversarial_model)
-    
-    
-    
 
 if __name__=='__main__':
     main()
