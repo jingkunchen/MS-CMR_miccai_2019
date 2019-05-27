@@ -222,8 +222,9 @@ def train(images_label, images_unlabel, generator, discriminator, adversarial_mo
 
 def main():
     # load image
-    images = np.load('images.npy')
-    masks = np.load('masks.npy')
+    images_label = np.load('images_label.npy')
+    images_unlabel = np.load('images_unlabel.npy')
+
     # build model
     image_dims = [Input_height, Input_width, C_dim]
     img_tensor = Input(shape=image_dims)
@@ -243,8 +244,9 @@ def main():
     generator.summary()
     discriminator.summary()
     adversarial_model.summary()
+    
     # train
-    train(images, masks, generator, discriminator, adversarial_model)
+    train(images_label, images_unlabel, generator, discriminator, adversarial_model)
 
 if __name__=='__main__':
     main()
