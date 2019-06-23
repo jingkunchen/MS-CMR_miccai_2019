@@ -601,3 +601,43 @@ INFO:root:Epoch:[2]-[34/38] --> d_loss: 0.001, g_loss:9.347,g_recon_loss:1.069
 INFO:root:Epoch:[2]-[35/38] --> d_loss: 0.002, g_loss:8.936,g_recon_loss:0.642
 INFO:root:Epoch:[2]-[36/38] --> d_loss: 0.000, g_loss:9.249,g_recon_loss:0.937
 INFO:root:Epoch:[2]-[37/38] --> d_loss: 0.003, g_loss:8.936,g_recon_loss:0.613
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_grad.py:102: div (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Deprecated in favor of operator or tf.math.divide.
+INFO:root:Epoch:[1]-[0/38] --> d_loss: 6.037, g_loss:0.476,g_recon_loss:0.469
+INFO:root:Epoch:[1]-[1/38] --> d_loss: 0.804, g_loss:0.516,g_recon_loss:0.367
+INFO:root:Epoch:[1]-[2/38] --> d_loss: 0.834, g_loss:1.027,g_recon_loss:0.334
+INFO:root:Epoch:[1]-[3/38] --> d_loss: 0.121, g_loss:2.407,g_recon_loss:0.512
+INFO:root:Epoch:[1]-[4/38] --> d_loss: 1.444, g_loss:1.656,g_recon_loss:0.873
+INFO:root:Epoch:[1]-[5/38] --> d_loss: 0.884, g_loss:24.754,g_recon_loss:14.843
+INFO:root:Epoch:[1]-[6/38] --> d_loss: 1.349, g_loss:1.749,g_recon_loss:0.622
+INFO:root:Epoch:[1]-[7/38] --> d_loss: 2.348, g_loss:0.949,g_recon_loss:0.315
+INFO:root:Epoch:[1]-[8/38] --> d_loss: 1.094, g_loss:14.208,g_recon_loss:10.710
+INFO:root:Epoch:[1]-[9/38] --> d_loss: 0.532, g_loss:5.038,g_recon_loss:0.456
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_grad.py:102: div (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Deprecated in favor of operator or tf.math.divide.
+INFO:root:Epoch:[1]-[0/38] --> d_loss: 4.426, g_loss:2.385,g_recon_loss:2.259
+INFO:root:Epoch:[1]-[1/38] --> d_loss: 1.777, g_loss:1.452,g_recon_loss:1.208
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_grad.py:102: div (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Deprecated in favor of operator or tf.math.divide.
+INFO:root:Epoch:[1]-[0/38] --> d_loss: 1.354, g_loss:1.196,g_recon_loss:0.327
+INFO:root:Epoch:[1]-[1/38] --> d_loss: 1.535, g_loss:0.990,g_recon_loss:0.410
+INFO:root:Epoch:[1]-[2/38] --> d_loss: 1.583, g_loss:0.913,g_recon_loss:0.283
+INFO:root:Epoch:[1]-[3/38] --> d_loss: 2.003, g_loss:0.603,g_recon_loss:0.275
+INFO:root:Epoch:[1]-[4/38] --> d_loss: 1.696, g_loss:1.013,g_recon_loss:0.394
+INFO:root:Epoch:[1]-[5/38] --> d_loss: 2.289, g_loss:0.687,g_recon_loss:0.287
+INFO:root:Epoch:[1]-[6/38] --> d_loss: 2.630, g_loss:0.390,g_recon_loss:0.216
