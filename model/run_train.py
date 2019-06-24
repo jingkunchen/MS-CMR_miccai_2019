@@ -6,6 +6,7 @@ import json
 import os
 import logging
 import numpy as np
+import time
 import SimpleITK as sitk
 import matplotlib.pyplot as plt
 from sklearn.utils import class_weight
@@ -19,7 +20,7 @@ from models.DRUNet32f import get_model
 from models.CNN import build_discriminator
 from run_test import get_eval_metrics
 from tools.augmentation import augmentation
-from tools import patch_utils
+from tools import patch_utils, logger, facades_generator
 from models.discrimator import PatchGanDiscriminator
 from models.dcgan import DCGAN
 from metrics import weighted_categorical_crossentropy
@@ -163,7 +164,7 @@ def main(train_imgs_np_file,
     logging.basicConfig(filename='UNET_loss.log', level=logging.INFO)
     # patch GAN model
     if use_patch_gan:
-        sub_patch_dim = (54, 54)
+        sub_patch_dim = (56, 56)
         nb_patch_patches, patch_gan_dim = patch_utils.num_patches(
             output_img_dim=mask_shape, sub_patch_dim=sub_patch_dim)
         print("nb_patch_patches:", nb_patch_patches)
@@ -194,6 +195,146 @@ def main(train_imgs_np_file,
         discriminator.trainable = True
         discriminator.compile(loss='binary_crossentropy',
                               optimizer=opt_discriminator)
+
+        batch_size = 1
+        
+        nb_epoch = 100
+        n_images_per_epoch = 400
+        print('Training starting...')
+        for epoch in range(0, nb_epoch):
+
+            print('Epoch {}'.format(epoch))
+            batch_counter = 1
+            start = time.time()
+            progbar = keras_generic_utils.Progbar(n_images_per_epoch)
+
+            # init the datasources again for each epoch
+            
+            batch_idxs = len(train_imgs) // batch_size
+            for idx in range(0, batch_idxs):
+                img_batch = train_imgs[idx * batch_size:(idx + 1) * batch_size]
+                masks_cat_batch = train_masks_cat[idx * batch_size:(idx + 1) *
+                                                  batch_size]
+            
+                mask_disc = masks_cat_batch
+                mask_disc = patch_utils.extract_patches(images=mask_disc, sub_patch_dim=sub_patch_dim)
+                patch_utils.get_disc_batch
+                gen_mask_disc = generator_nn.predict(img_batch)
+                # print("gen_mask_disc:",gen_mask_disc.shape)
+                gen_mask_disc = patch_utils.extract_patches(images=gen_mask_disc, sub_patch_dim=sub_patch_dim)
+                
+                
+
+                ones = np.ones((batch_size, 1))
+                zeros = np.zeros((batch_size, 1))
+                # print("mask_disc:",len(mask_disc))
+                # print("gen_mask_disc:",len(gen_mask_disc))
+                # Update the discriminator
+                # print('calculating discriminator loss')
+                d_real_loss = discriminator.train_on_batch(mask_disc, ones)
+                d_fake_loss = discriminator.train_on_batch(gen_mask_disc, zeros)
+
+
+                # Freeze the discriminator
+                discriminator.trainable = False
+
+                # trainining GAN
+                # print('calculating GAN loss...')
+                gen_loss = dc_gan_nn.train_on_batch(img_batch, [masks_cat_batch, ones])
+
+                # Unfreeze the discriminator
+                discriminator.trainable = True
+                # counts batches we've ran through for generating fake vs real images
+                batch_counter += 1
+
+                # print losses
+                D_log_loss = d_real_loss + d_fake_loss
+                gen_total_loss = gen_loss[0].tolist()
+                gen_total_loss = min(gen_total_loss, 1000000)
+                gen_mae = gen_loss[1].tolist()
+                gen_mae = min(gen_mae, 1000000)
+                gen_log_loss = gen_loss[2].tolist()
+                gen_log_loss = min(gen_log_loss, 1000000)
+
+                progbar.add(batch_size, values=[("Dis logloss", D_log_loss),
+                                                ("Gen total", gen_total_loss),
+                                                ("Gen L1 (mae)", gen_mae),
+                                                ("Gen logloss", gen_log_loss)])
+
+                # ---------------------------
+                # Save images for visualization every 2nd batch
+            if eval_per_epoch and current_epoch % 10 == 0:
+                pred_masks_1 = dc_gan_nn.predict(test_imgs_1)
+                pred_masks_1 = pred_masks_1[0].argmax(axis=3)
+                pred_masks_2 = dc_gan_nn.predict(test_imgs_2)
+                pred_masks_2 = pred_masks_2[0].argmax(axis=3)
+                rows = np.shape(pred_masks_1)[1]
+                cols = np.shape(pred_masks_1)[2]
+                orig_mask_1[:,
+                            int((orig_rows - rows) /
+                                2):int((orig_rows - rows) / 2) + rows,
+                            int((orig_cols - cols) /
+                                2):int((orig_cols - cols) / 2) +
+                            cols] = pred_masks_1
+                orig_mask_2[:,
+                            int((orig_rows - rows) /
+                                2):int((orig_rows - rows) / 2) + rows,
+                            int((orig_cols - cols) /
+                                2):int((orig_cols - cols) / 2) +
+                            cols] = pred_masks_2
+                sitk.WriteImage(
+                    sitk.GetImageFromArray(orig_mask_1),
+                    output + '/' + test_imgs_np_file_1[0:6] +
+                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                sitk.WriteImage(
+                    sitk.GetImageFromArray(orig_mask_2),
+                    output + '/' + test_imgs_np_file_2[0:6] +
+                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                
+                dsc, h95, vs = get_eval_metrics(test_masks_1[:, :, :, 0],
+                                                pred_masks_1)
+                history_1['dsc'].append(dsc)
+                history_1['h95'].append(h95)
+                print(dsc)
+                print(h95)
+                dsc, h95, vs = get_eval_metrics(test_masks_2[:, :, :, 0],
+                                                pred_masks_2)
+                history_2['dsc'].append(dsc)
+                history_2['h95'].append(h95)
+                print(dsc)
+                print(h95)
+
+                if output_test_eval != '':
+                    with open(output_test_eval, 'w+') as outfile:
+                        json.dump(history_1, outfile)
+                        json.dump(history_2, outfile)
+
+               
+            current_epoch += 1
+
+
+        if output_test_eval != '':
+            with open(output_test_eval, 'w+') as outfile:
+                json.dump(history_1, outfile)
+                json.dump(history_2, outfile)  
+
+            # -----------------------
+            # log epoch
+            print("")
+            print('Epoch %s/%s, Time: %s' % (epoch + 1, nb_epoch, time.time() - start))
+
+            # ------------------------------
+            # save weights on every 2nd epoch
+            if epoch % 2 == 0:
+                gen_weights_path = os.path.join('./pix2pix_out/weights/gen_weights_epoch_%s.h5' % (epoch))
+                generator_nn.save_weights(gen_weights_path, overwrite=True)
+
+                disc_weights_path = os.path.join('./pix2pix_out/weights/disc_weights_epoch_%s.h5' % (epoch))
+                discriminator.save_weights(disc_weights_path, overwrite=True)
+
+                DCGAN_weights_path = os.path.join('./pix2pix_out/weights/DCGAN_weights_epoch_%s.h5' % (epoch))
+                dc_gan_nn.save_weights(DCGAN_weights_path, overwrite=True)
+            
 
     # CNN model
     elif use_cnn:

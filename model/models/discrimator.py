@@ -1,5 +1,5 @@
-from keras.layers import Flatten, Dense, Input, Reshape, merge, Lambda
-from keras.layers.convolutional import Convolution2D
+from keras.layers import Flatten, Dense, Input, Reshape, merge, Lambda, concatenate
+from keras.layers.convolutional import Convolution2D, Conv2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import Model
@@ -50,7 +50,8 @@ def PatchGanDiscriminator(output_img_dim, patch_dim, nb_patches):
     # CONV 1
     # Do first conv bc it is different from the rest
     # paper skips batch norm for first layer
-    disc_out = Convolution2D(nb_filter=64, nb_row=4, nb_col=4, border_mode='same', subsample=(stride, stride), name='disc_conv_1')(input_layer)
+    
+    disc_out = Conv2D(kernel_size=(4, 4), filters=64, strides=(2, 2), padding="same")(input_layer)
     disc_out = LeakyReLU(alpha=0.2)(disc_out)
 
     # CONV 2 - CONV N
@@ -58,7 +59,7 @@ def PatchGanDiscriminator(output_img_dim, patch_dim, nb_patches):
     for i, filter_size in enumerate(filters_list[1:]):
         name = 'disc_conv_{}'.format(i+2)
 
-        disc_out = Convolution2D(nb_filter=filter_size, nb_row=4, nb_col=4, border_mode='same', subsample=(stride, stride), name=name)(disc_out)
+        disc_out = Conv2D( kernel_size=(4, 4), filters=128, strides=(2, 2), padding="same")(disc_out)
         # disc_out = BatchNormalization(name=name + '_bn', mode=bn_mode, axis=axis)(disc_out)
         disc_out = BatchNormalization(name=name + '_bn')(disc_out)
         disc_out = LeakyReLU(alpha=0.2)(disc_out)
@@ -84,18 +85,20 @@ def generate_patch_gan_loss(last_disc_conv_layer, patch_dim, input_layer, nb_pat
     # get an activation
     x_flat = Flatten()(last_disc_conv_layer)
     x = Dense(2, activation='softmax', name="disc_dense")(x_flat)
-
-    patch_gan = Model(input=[input_layer], output=[x, x_flat], name="patch_gan")
+    
+    patch_gan = Model(input_layer, [x, x_flat])
     
     # generate individual losses for each patch
     x = [patch_gan(patch)[0] for patch in list_input]
     x_mbd = [patch_gan(patch)[1] for patch in list_input]
     
-    print(x,x_mbd)
+    print("x:",x)
+    print("x_mbd:",x_mbd)
     print("--------")
     # merge layers if have multiple patches (aka perceptual loss)
     if len(x) > 1:
-        x = merge(x, mode="concat", name="merged_features")
+        x = concatenate(x)
+        # x = merge(x, mode="concat", name="merged_features")
     else:
         x = x[0]
 
@@ -103,7 +106,8 @@ def generate_patch_gan_loss(last_disc_conv_layer, patch_dim, input_layer, nb_pat
     # mbd = mini batch discrimination
     # https://arxiv.org/pdf/1606.03498.pdf
     if len(x_mbd) > 1:
-        x_mbd = merge(x_mbd, mode="concat", name="merged_feature_mbd")
+        x_mbd = concatenate(x_mbd)
+        # x_mbd = merge(x_mbd, mode="concat", name="merged_feature_mbd")
     else:
         x_mbd = x_mbd[0]
 
@@ -116,9 +120,10 @@ def generate_patch_gan_loss(last_disc_conv_layer, patch_dim, input_layer, nb_pat
     x_mbd = M(x_mbd)
     x_mbd = Reshape((num_kernels, dim_per_kernel))(x_mbd)
     x_mbd = MBD(x_mbd)
-    x = merge([x, x_mbd], mode='concat')
+    x = concatenate([x, x_mbd])
+    # x = merge([x, x_mbd], mode='concat')
 
-    x_out = Dense(2, activation="softmax", name="disc_output")(x)
+    x_out = Dense(1, activation="softmax", name="disc_output")(x)
 
     discriminator = Model(input=list_input, output=[x_out], name='discriminator_nn')
     return discriminator
