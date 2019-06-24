@@ -100,10 +100,11 @@ def main(train_imgs_np_file,
 
     num_classes = 4
     if not use_augmentation:
-        # total_epochs = 1000
-        total_epochs = 500
+        total_epochs = 1000
+       
     else:
-        total_epochs = 50
+        total_epochs = 500
+    n_images_per_epoch = 616
     batch_size = 16
     learn_rate = 2e-4
 
@@ -196,10 +197,10 @@ def main(train_imgs_np_file,
         discriminator.compile(loss='binary_crossentropy',
                               optimizer=opt_discriminator)
 
-        batch_size = 1
+    
         
-        nb_epoch = 100
-        n_images_per_epoch = 616
+        
+        
         print('Training starting...')
 
         current_epoch = 1
@@ -217,7 +218,7 @@ def main(train_imgs_np_file,
         history_2['dsc'] = []
         history_2['h95'] = []
 
-        for epoch in range(0, nb_epoch):
+        for epoch in range(0, total_epochs):
 
             print('Epoch {}'.format(epoch))
             batch_counter = 1
