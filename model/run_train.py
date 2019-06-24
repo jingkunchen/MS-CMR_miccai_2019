@@ -199,8 +199,24 @@ def main(train_imgs_np_file,
         batch_size = 1
         
         nb_epoch = 100
-        n_images_per_epoch = 400
+        n_images_per_epoch = 616
         print('Training starting...')
+
+        current_epoch = 1
+        orig_num = 3
+        orig_rows = 480
+        orig_cols = 480
+        orig_mask_1 = np.zeros([orig_num, orig_rows, orig_cols],
+                               dtype='float32')
+        orig_mask_2 = np.zeros([orig_num, orig_rows, orig_cols],
+                               dtype='float32')
+        history_1 = {}
+        history_1['dsc'] = []
+        history_1['h95'] = []
+        history_2 = {}
+        history_2['dsc'] = []
+        history_2['h95'] = []
+
         for epoch in range(0, nb_epoch):
 
             print('Epoch {}'.format(epoch))
@@ -263,7 +279,7 @@ def main(train_imgs_np_file,
 
                 # ---------------------------
                 # Save images for visualization every 2nd batch
-            if eval_per_epoch and current_epoch % 10 == 0:
+            if eval_per_epoch and epoch % 10 == 0:
                 pred_masks_1 = dc_gan_nn.predict(test_imgs_1)
                 pred_masks_1 = pred_masks_1[0].argmax(axis=3)
                 pred_masks_2 = dc_gan_nn.predict(test_imgs_2)
