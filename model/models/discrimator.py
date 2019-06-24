@@ -26,7 +26,7 @@ def PatchGanDiscriminator(output_img_dim, patch_dim, nb_patches):
     2. Calculates the cost for each patch
     3. Returns the avg of the costs as the output of the network
 
-    :param patch_dim: (channels, width, height) T
+    :param patch_dim: ( width, height, channels) T
     :param nb_patches:
     :return:
     """
@@ -56,7 +56,7 @@ def PatchGanDiscriminator(output_img_dim, patch_dim, nb_patches):
 
     # CONV 2 - CONV N
     # do the rest of the convs based on the sizes from the filters
-    for i, filter_size in enumerate(filters_list[1:]):
+    for i, _ in enumerate(filters_list[1:]):
         name = 'disc_conv_{}'.format(i+2)
 
         disc_out = Conv2D( kernel_size=(4, 4), filters=128, strides=(2, 2), padding="same")(disc_out)
@@ -91,6 +91,8 @@ def generate_patch_gan_loss(last_disc_conv_layer, patch_dim, input_layer, nb_pat
     # generate individual losses for each patch
     x = [patch_gan(patch)[0] for patch in list_input]
     x_mbd = [patch_gan(patch)[1] for patch in list_input]
+
+
     
     print("x:",x)
     print("x_mbd:",x_mbd)
@@ -130,6 +132,7 @@ def generate_patch_gan_loss(last_disc_conv_layer, patch_dim, input_layer, nb_pat
 
 
 def lambda_output(input_shape):
+    # return input_shape[:2]
     return input_shape[:2]
 
 

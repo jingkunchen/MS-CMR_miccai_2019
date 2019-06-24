@@ -101,7 +101,7 @@ def main(train_imgs_np_file,
     num_classes = 4
     if not use_augmentation:
         total_epochs = 1000
-       
+
     else:
         total_epochs = 500
     n_images_per_epoch = 616
@@ -197,10 +197,6 @@ def main(train_imgs_np_file,
         discriminator.compile(loss='binary_crossentropy',
                               optimizer=opt_discriminator)
 
-    
-        
-        
-        
         print('Training starting...')
 
         current_epoch = 1
@@ -226,21 +222,21 @@ def main(train_imgs_np_file,
             progbar = keras_generic_utils.Progbar(n_images_per_epoch)
 
             # init the datasources again for each epoch
-            
+
             batch_idxs = len(train_imgs) // batch_size
             for idx in range(0, batch_idxs):
                 img_batch = train_imgs[idx * batch_size:(idx + 1) * batch_size]
                 masks_cat_batch = train_masks_cat[idx * batch_size:(idx + 1) *
                                                   batch_size]
-            
+
                 mask_disc = masks_cat_batch
-                mask_disc = patch_utils.extract_patches(images=mask_disc, sub_patch_dim=sub_patch_dim)
+                mask_disc = patch_utils.extract_patches(
+                    images=mask_disc, sub_patch_dim=sub_patch_dim)
                 patch_utils.get_disc_batch
                 gen_mask_disc = generator_nn.predict(img_batch)
                 # print("gen_mask_disc:",gen_mask_disc.shape)
-                gen_mask_disc = patch_utils.extract_patches(images=gen_mask_disc, sub_patch_dim=sub_patch_dim)
-                
-                
+                gen_mask_disc = patch_utils.extract_patches(
+                    images=gen_mask_disc, sub_patch_dim=sub_patch_dim)
 
                 ones = np.ones((batch_size, 1))
                 zeros = np.zeros((batch_size, 1))
@@ -249,15 +245,17 @@ def main(train_imgs_np_file,
                 # Update the discriminator
                 # print('calculating discriminator loss')
                 d_real_loss = discriminator.train_on_batch(mask_disc, ones)
-                d_fake_loss = discriminator.train_on_batch(gen_mask_disc, zeros)
-
-
+                d_fake_loss = discriminator.train_on_batch(
+                    gen_mask_disc, zeros)
+                print("d_real_loss, d_fake_loss:", d_real_loss, d_fake_loss,
+                      discriminator.trainable)
                 # Freeze the discriminator
                 discriminator.trainable = False
-
+                print("----", discriminator.trainable)
                 # trainining GAN
                 # print('calculating GAN loss...')
-                gen_loss = dc_gan_nn.train_on_batch(img_batch, [masks_cat_batch, ones])
+                gen_loss = dc_gan_nn.train_on_batch(img_batch,
+                                                    [masks_cat_batch, ones])
 
                 # Unfreeze the discriminator
                 discriminator.trainable = True
@@ -273,10 +271,11 @@ def main(train_imgs_np_file,
                 gen_log_loss = gen_loss[2].tolist()
                 gen_log_loss = min(gen_log_loss, 1000000)
 
-                progbar.add(batch_size, values=[("Dis logloss", D_log_loss),
-                                                ("Gen total", gen_total_loss),
-                                                ("Gen L1 (mae)", gen_mae),
-                                                ("Gen logloss", gen_log_loss)])
+                progbar.add(batch_size,
+                            values=[("Dis logloss", D_log_loss),
+                                    ("Gen total", gen_total_loss),
+                                    ("Gen L1 (mae)", gen_mae),
+                                    ("Gen logloss", gen_log_loss)])
 
                 # ---------------------------
                 # Save images for visualization every 2nd batch
@@ -301,13 +300,13 @@ def main(train_imgs_np_file,
                             cols] = pred_masks_2
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_1),
-                    output + '/' + test_imgs_np_file_1[0:6] +
-                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    output + '/' + test_imgs_np_file_1[0:6] + '_pred_epoch_' +
+                    str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_2),
-                    output + '/' + test_imgs_np_file_2[0:6] +
-                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
-                
+                    output + '/' + test_imgs_np_file_2[0:6] + '_pred_epoch_' +
+                    str(current_epoch) + '.nii.gz')
+
                 dsc, h95, vs = get_eval_metrics(test_masks_1[:, :, :, 0],
                                                 pred_masks_1)
                 history_1['dsc'].append(dsc)
@@ -326,32 +325,34 @@ def main(train_imgs_np_file,
                         json.dump(history_1, outfile)
                         json.dump(history_2, outfile)
 
-               
             current_epoch += 1
-
-
-        if output_test_eval != '':
-            with open(output_test_eval, 'w+') as outfile:
-                json.dump(history_1, outfile)
-                json.dump(history_2, outfile)  
 
             # -----------------------
             # log epoch
             print("")
-            print('Epoch %s/%s, Time: %s' % (epoch + 1, nb_epoch, time.time() - start))
+            print('Epoch %s/%s, Time: %s' %
+                  (epoch + 1, total_epochs, time.time() - start))
 
             # ------------------------------
             # save weights on every 2nd epoch
             if epoch % 2 == 0:
-                gen_weights_path = os.path.join('./pix2pix_out/weights/gen_weights_epoch_%s.h5' % (epoch))
+                gen_weights_path = os.path.join(
+                    './pix2pix_out/weights/gen_weights_epoch_%s.h5' % (epoch))
                 generator_nn.save_weights(gen_weights_path, overwrite=True)
 
-                disc_weights_path = os.path.join('./pix2pix_out/weights/disc_weights_epoch_%s.h5' % (epoch))
+                disc_weights_path = os.path.join(
+                    './pix2pix_out/weights/disc_weights_epoch_%s.h5' % (epoch))
                 discriminator.save_weights(disc_weights_path, overwrite=True)
 
-                DCGAN_weights_path = os.path.join('./pix2pix_out/weights/DCGAN_weights_epoch_%s.h5' % (epoch))
+                DCGAN_weights_path = os.path.join(
+                    './pix2pix_out/weights/DCGAN_weights_epoch_%s.h5' %
+                    (epoch))
                 dc_gan_nn.save_weights(DCGAN_weights_path, overwrite=True)
-            
+
+        if output_test_eval != '':
+            with open(output_test_eval, 'w+') as outfile:
+                json.dump(history_1, outfile)
+                json.dump(history_2, outfile)
 
     # CNN model
     elif use_cnn:
@@ -363,16 +364,17 @@ def main(train_imgs_np_file,
         discriminator.summary()
         img = Input(shape=img_shape)
         rec_mask = generator_nn(img)
-        
+
         discriminator.trainable = False
         validity = discriminator(rec_mask)
-        
         adversarial_model = Model(img, [rec_mask, validity], name='D')
         adversarial_model.compile(
             loss=['categorical_crossentropy', 'binary_crossentropy'],
             loss_weights=[1, 1],
             optimizer=optimizer)
-        
+        discriminator.trainable = False
+        discriminator.compile(loss='binary_crossentropy',
+                              optimizer=opt_discriminator)
         adversarial_model.summary()
         if pretrained_adversarial_model != '':
             assert os.path.isfile(pretrained_model)
@@ -412,13 +414,16 @@ def main(train_imgs_np_file,
                     masks_cat_batch, ones)
                 d_loss_fake = discriminator.train_on_batch(
                     recon_masks_cat, zeros)
-
+                discriminator.trainable = False
                 adversarial_model.train_on_batch(img_batch,
-                                                   [masks_cat_batch, ones])
+                                                 [masks_cat_batch, ones])
+
                 g_loss = adversarial_model.train_on_batch(
                     img_batch, [masks_cat_batch, ones])
+
+                discriminator.trainable = True
                 msg = 'Epoch:[{0}]-[{1}/{2}] --> d_loss: {3:>0.3f}'.format( \
-                                current_epoch, idx, batch_idxs, 0.5 * np.add(d_loss_real, d_loss_fake))+" "+str(g_loss[0]) +" "+ str(g_loss[1])
+                                current_epoch, idx, batch_idxs, d_loss_real+d_loss_fake)+" "+str(g_loss[0]) +" "+ str(g_loss[1])
                 print(msg)
                 logging.info(msg)
             if eval_per_epoch and current_epoch % 10 == 0:
@@ -442,13 +447,13 @@ def main(train_imgs_np_file,
                             cols] = pred_masks_2
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_1),
-                    output + '/' + test_imgs_np_file_1[0:6] +
-                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    output + '/' + test_imgs_np_file_1[0:6] + '_pred_epoch_' +
+                    str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_2),
-                    output + '/' + test_imgs_np_file_2[0:6] +
-                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
-                
+                    output + '/' + test_imgs_np_file_2[0:6] + '_pred_epoch_' +
+                    str(current_epoch) + '.nii.gz')
+
                 dsc, h95, vs = get_eval_metrics(test_masks_1[:, :, :, 0],
                                                 pred_masks_1)
                 history_1['dsc'].append(dsc)
@@ -467,9 +472,7 @@ def main(train_imgs_np_file,
                         json.dump(history_1, outfile)
                         json.dump(history_2, outfile)
 
-               
             current_epoch += 1
-
 
         if output_test_eval != '':
             with open(output_test_eval, 'w+') as outfile:
@@ -487,18 +490,16 @@ def main(train_imgs_np_file,
                               metrics=['accuracy'])
         generator_img = Model(img, rec_mask, name='D')
         discriminator.trainable = False
-        
+
         valid = discriminator(rec_mask)
         generator_val = Model(img, valid, name='V')
-        
 
         discriminator.summary()
         generator_val.summary()
         generator_img.summary()
-        
+
         generator_img.compile(loss='categorical_crossentropy',
                               optimizer=optimizer)
-        
 
         generator_val.compile(loss='binary_crossentropy', optimizer=optimizer)
 
@@ -537,12 +538,14 @@ def main(train_imgs_np_file,
                 d_loss_fake = discriminator.train_on_batch(
                     recon_masks_cat, zeros)
                 d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
-                g_loss_img = generator_img.train_on_batch(img_batch, masks_cat_batch)
+                g_loss_img = generator_img.train_on_batch(
+                    img_batch, masks_cat_batch)
                 g_loss_val = generator_val.train_on_batch(img_batch, ones)
-                
+
                 msg = 'Epoch:[{0}]-[{1}/{2}] --> d_loss:'.format( \
                                 current_epoch, idx, batch_idxs)
-                msg = msg+ " "+str(d_loss)+" "+str(g_loss_val)+" "+str(g_loss_img)
+                msg = msg + " " + str(d_loss) + " " + str(
+                    g_loss_val) + " " + str(g_loss_img)
                 print(msg)
                 logging.info(msg)
             if eval_per_epoch and current_epoch % 10 == 0:
@@ -566,13 +569,13 @@ def main(train_imgs_np_file,
                             cols] = pred_masks_2
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_1),
-                    output + '/' + test_imgs_np_file_1[0:6] +
-                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    output + '/' + test_imgs_np_file_1[0:6] + '_pred_epoch_' +
+                    str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_2),
-                    output + '/' + test_imgs_np_file_2[0:6] +
-                    '_pred_epoch_' + str(current_epoch) + '.nii.gz')
-                
+                    output + '/' + test_imgs_np_file_2[0:6] + '_pred_epoch_' +
+                    str(current_epoch) + '.nii.gz')
+
                 dsc, h95, vs = get_eval_metrics(test_masks_1[:, :, :, 0],
                                                 pred_masks_1)
                 history_1['dsc'].append(dsc)
@@ -591,9 +594,7 @@ def main(train_imgs_np_file,
                         json.dump(history_1, outfile)
                         json.dump(history_2, outfile)
 
-                
             current_epoch += 1
-
 
         if output_test_eval != '':
             with open(output_test_eval, 'w+') as outfile:
