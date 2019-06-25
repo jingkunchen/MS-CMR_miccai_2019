@@ -6,7 +6,7 @@ from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Add, Concate
 from keras import backend as K
 K.set_image_data_format('channels_last')
 
-def get_model(img_shape=None, num_classes=2):
+def get_model(img_shape=None, num_classes=4):
     inputs = Input(shape=img_shape)
 
     conv1_1 = Conv2D(32, (3, 3), dilation_rate=1, padding='same', activation='relu')(inputs)
