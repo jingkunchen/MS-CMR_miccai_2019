@@ -112,17 +112,15 @@ def main(train_imgs_np_file,
     assert (test_imgs_np_file_1 != '' and test_masks_np_file_1 != '') or (
         test_imgs_np_file_1 == '' and test_masks_np_file_1 == ''
     ), 'Both test image file and test mask file must be given'
-    if use_patch_gan_discrimator:
-        num_classes = 4
-    else:
-        num_classes = 4
+    
+    num_classes = 4
     if not use_augmentation:
         total_epochs = 100
 
     else:
         total_epochs = 500
     n_images_per_epoch = 616
-    batch_size = 16
+    batch_size = 1
     learn_rate = 2e-4
 
     eval_per_epoch = (test_imgs_np_file_1 != '' and test_masks_np_file_1 != '')
@@ -133,9 +131,10 @@ def main(train_imgs_np_file,
         test_masks_2 = np.load(test_masks_np_file_2)
 
     train_imgs = np.load(train_imgs_np_file)
-    print("train_imgs:", train_imgs)
+    print("train_imgs:", train_imgs.shape)
     train_masks = np.load(train_masks_np_file)
-    print("train_masks:", train_masks)
+    print("train_masks:", train_masks.shape)
+   
 
     if use_weighted_crossentropy:
         class_weights = class_weight.compute_class_weight(
@@ -145,6 +144,9 @@ def main(train_imgs_np_file,
     print("channels_num:", channels_num)
     img_shape = (train_imgs.shape[1], train_imgs.shape[2], channels_num)
     mask_shape = (train_masks.shape[1], train_masks.shape[2], num_classes)
+
+
+
     print("img_shape:", img_shape)
     print("mask_shape:", mask_shape)
 
@@ -164,8 +166,9 @@ def main(train_imgs_np_file,
         train_imgs = np.concatenate((train_imgs, images_aug), axis=0)
         train_masks = np.concatenate((train_masks, masks_aug), axis=0)
     print("train_imgs, train_masks, num_classes:", train_imgs.shape,
-          train_masks.shape, num_classes - 1)
+          train_masks.shape, num_classes)
     if use_patch_gan_discrimator:
+        train_masks_cat = to_categorical(train_masks, num_classes)
         train_masks_cat = to_categorical(train_masks, num_classes)
         print("train_masks_cat:", train_masks_cat.shape)
 
@@ -250,7 +253,7 @@ def main(train_imgs_np_file,
         for epoch in range(0, total_epochs):
 
             print('Epoch {}'.format(epoch))
-            batch_counter = 1
+            
             start = time.time()
             progbar = keras_generic_utils.Progbar(n_images_per_epoch)
 
@@ -263,22 +266,29 @@ def main(train_imgs_np_file,
                                                   batch_size]
                 # masks_cat_batch_new = train_masks_cat_new[idx * batch_size:(idx + 1) *
                 #                                   batch_size]
-
+                # print("-----------------------------")
+                # print("masks_cat_batch:",masks_cat_batch.shape)
+                # print("img_batch:",img_batch.shape)
                 mask_disc = np.concatenate((masks_cat_batch, img_batch),
                                            axis=3)
-                print("-----------------------------")
-                print("mask_disc:", mask_disc[0,:,:,5])
-                print("-----------------------------")
+                
+                # print("mask_disc:", mask_disc.shape)
+                # print("-----------------------------")
                 # train_masks_cat_new = np.concatenate((train_masks_cat, train_imgs), axis=3)
+                print(" ")
+                # print("mask_disc:", mask_disc.shape)
                 mask_disc = patch_utils.extract_patches(
                     images=mask_disc, sub_patch_dim=sub_patch_dim)
+                # print("extract_patches:", len(mask_disc))
+
                 # patch_utils.get_disc_batch
                 gen_mask_disc = generator_nn.predict(img_batch)
                 gen_mask_disc = np.concatenate((gen_mask_disc, img_batch),
                                                axis=3)
-                print("gen_mask_disc:", gen_mask_disc.shape)
+                # print("gen_mask_disc:", gen_mask_disc.shape)
                 gen_mask_disc = patch_utils.extract_patches(
                     images=gen_mask_disc, sub_patch_dim=sub_patch_dim)
+                # print("extract_patches:", len(gen_mask_disc))
 
                 ones = np.ones((batch_size, 1))
                 zeros = np.zeros((batch_size, 1))
@@ -298,8 +308,7 @@ def main(train_imgs_np_file,
                 # Unfreeze the discriminator
                 discriminator.trainable = True
                 # counts batches we've ran through for generating fake vs real images
-                batch_counter += 1
-
+                
                 # print losses
                 D_log_loss = d_real_loss + d_fake_loss
                 gen_total_loss = gen_loss[0].tolist()
@@ -319,6 +328,7 @@ def main(train_imgs_np_file,
                 # Save images for visualization every 2nd batch
             if eval_per_epoch and epoch % 10 == 0:
                 pred_masks_1 = dc_gan_nn.predict(test_imgs_1)
+                # pred_masks_1 = pred_masks_1[0].argmax(axis=3)
                 pred_masks_1 = pred_masks_1[0].argmax(axis=3)
                 pred_masks_2 = dc_gan_nn.predict(test_imgs_2)
                 pred_masks_2 = pred_masks_2[0].argmax(axis=3)
@@ -411,7 +421,8 @@ def main(train_imgs_np_file,
         dc_gan_nn = DCGAN(generator_model=generator_nn,
                           discriminator_model=discriminator,
                           input_img_dim=img_shape,
-                          patch_dim=sub_patch_dim)
+                          patch_dim=sub_patch_dim,
+                          use_patch_gan_discrimator=use_patch_gan_discrimator)
         dc_gan_nn.summary()
         # Compile DCGAN
         loss = [loss_function, 'binary_crossentropy']
@@ -453,7 +464,7 @@ def main(train_imgs_np_file,
         for epoch in range(0, total_epochs):
 
             print('Epoch {}'.format(epoch))
-            batch_counter = 1
+            
             start = time.time()
             progbar = keras_generic_utils.Progbar(n_images_per_epoch)
 
@@ -491,8 +502,8 @@ def main(train_imgs_np_file,
 
                 # Unfreeze the discriminator
                 discriminator.trainable = True
-                # counts batches we've ran through for generating fake vs real images
-                batch_counter += 1
+                
+                
 
                 # print losses
                 D_log_loss = d_real_loss + d_fake_loss
@@ -644,7 +655,7 @@ def main(train_imgs_np_file,
         for epoch in range(0, total_epochs):
 
             print('Epoch {}'.format(epoch))
-            batch_counter = 1
+            
             start = time.time()
             progbar = keras_generic_utils.Progbar(n_images_per_epoch)
 
@@ -688,8 +699,7 @@ def main(train_imgs_np_file,
 
                 # Unfreeze the discriminator
                 discriminator.trainable = True
-                # counts batches we've ran through for generating fake vs real images
-                batch_counter += 1
+                
 
                 # print losses
                 D_log_loss = d_real_loss + d_fake_loss
@@ -802,7 +812,8 @@ def main(train_imgs_np_file,
         dc_gan_nn = DCGAN(generator_model=generator_nn,
                           discriminator_model=discriminator,
                           input_img_dim=img_shape,
-                          patch_dim=sub_patch_dim)
+                          patch_dim=sub_patch_dim,
+                          use_patch_gan_discrimator=use_patch_gan_discrimator)
         dc_gan_nn.summary()
         # Compile DCGAN
         loss = [loss_function, 'binary_crossentropy']
@@ -836,7 +847,7 @@ def main(train_imgs_np_file,
         for epoch in range(0, total_epochs):
 
             print('Epoch {}'.format(epoch))
-            batch_counter = 1
+           
             start = time.time()
             progbar = keras_generic_utils.Progbar(n_images_per_epoch)
 
@@ -874,8 +885,7 @@ def main(train_imgs_np_file,
 
                 # Unfreeze the discriminator
                 discriminator.trainable = True
-                # counts batches we've ran through for generating fake vs real images
-                batch_counter += 1
+
 
                 # print losses
                 D_log_loss = d_real_loss + d_fake_loss

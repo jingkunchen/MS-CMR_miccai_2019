@@ -48,16 +48,18 @@ def extract_patches(images, sub_patch_dim):
     y_spots = range(0, im_height, patch_height )
     # print("y_spots:",y_spots)
     all_patches = []
-
+    # print("images:",images)
     for y in y_spots:
         for x in x_spots:
             
             # indexing here is cra
             # images[num_images, num_channels, width, height]
             # this says, cut a patch across all images at the same time with this width, height
-            # image_patches = images[:, :, y: y+patch_height, x: x+patch_width]
+            # image_patches = images[:,  y: y+patch_height, x: x+patch_width,:]
             image_patches = images[:, y: y+patch_height, x: x+patch_width, :]
+            # print("image_patches:",image_patches)
             all_patches.append(np.asarray(image_patches, dtype=np.float32))
+    # print("all_patches:",all_patches[0])
     return all_patches
 
 def get_disc_batch(X_original_batch, X_decoded_batch, generator_model, batch_counter, patch_dim,
