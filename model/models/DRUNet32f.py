@@ -8,7 +8,6 @@ K.set_image_data_format('channels_last')
 
 def get_model(img_shape=None, num_classes=2):
     inputs = Input(shape=img_shape)
-    print(img_shape)
 
     conv1_1 = Conv2D(32, (3, 3), dilation_rate=1, padding='same', activation='relu')(inputs)
     conv1_2 = Conv2D(32, (3, 3), dilation_rate=1, padding='same', activation='relu')(conv1_1)
