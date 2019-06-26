@@ -1,7 +1,8 @@
-from keras.layers import Input, Dense, Flatten, BatchNormalization
+from keras.layers import Input, Dense, Flatten, BatchNormalization, MaxPooling2D
 from keras.layers.convolutional import Conv2D
 from keras.models import Model
 from keras.layers.advanced_activations import LeakyReLU
+from keras import regularizers
 
 
 def build_discriminator(input_shape):
@@ -16,32 +17,24 @@ def build_discriminator(input_shape):
         """
         df_dim = 16
         image = Input(shape=input_shape, name='d_input')
-        x = Conv2D(filters=df_dim, kernel_size = 5, strides=2, padding='same', name='d_h0_conv')(image)
+        x = Conv2D(filters=df_dim, kernel_size = 5, strides=1, padding='same', name='d_h0_conv', kernel_regularizer=regularizers.l2(0.01))(image)
+        x = MaxPooling2D(pool_size=(2, 2), strides=2)(x)
         x = LeakyReLU()(x)
 
-        x = Conv2D(filters=df_dim*2, kernel_size = 5, strides=2, padding='same', name='d_h1_conv')(x)
+        x = Conv2D(filters=df_dim*2, kernel_size = 5, strides=1, padding='same', name='d_h1_conv', kernel_regularizer=regularizers.l2(0.01))(x)
+        x = MaxPooling2D(pool_size=(2, 2), strides=2)(x)
         x = BatchNormalization()(x)
         x = LeakyReLU()(x)
 
-        x = Conv2D(filters=df_dim*4, kernel_size = 5, strides=2, padding='same', name='d_h2_conv')(x)
+        x = Conv2D(filters=df_dim*4, kernel_size = 5, strides=1, padding='same', name='d_h2_conv', kernel_regularizer=regularizers.l2(0.01))(x)
+        x = MaxPooling2D(pool_size=(2, 2), strides=2)(x)
         x = BatchNormalization()(x)
         x = LeakyReLU()(x)
 
-        x = Conv2D(filters=df_dim*8, kernel_size = 5, strides=2, padding='same', name='d_h3_conv')(x)
+        x = Conv2D(filters=df_dim*8, kernel_size = 5, strides=1, padding='same', name='d_h3_conv', kernel_regularizer=regularizers.l2(0.01))(x)
+        x = MaxPooling2D(pool_size=(2, 2), strides=2)(x)
         x = BatchNormalization()(x)
         x = LeakyReLU()(x)
-
-        # x = Conv2D(filters=df_dim*16, kernel_size = 5, strides=2, padding='same', name='d_h4_conv')(x)
-        # x = BatchNormalization()(x)
-        # x = LeakyReLU()(x)
-
-        # x = Conv2D(filters=df_dim*32, kernel_size = 5, strides=2, padding='same', name='d_h5_conv')(x)
-        # x = BatchNormalization()(x)
-        # x = LeakyReLU()(x)
-
-        # x = Conv2D(filters=df_dim*64, kernel_size = 5, strides=2, padding='same', name='d_h6_conv')(x)
-        # x = BatchNormalization()(x)
-        # x = LeakyReLU()(x)
 
         x = Flatten()(x)
         x = Dense(1, activation='sigmoid', name='d_h3_lin')(x)
