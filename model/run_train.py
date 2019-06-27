@@ -114,7 +114,7 @@ def main(train_imgs_np_file,
 
     num_classes = 4
     if not use_augmentation:
-        total_epochs = 1000
+        total_epochs = 100
         generator_epochs = 100
     else:
         total_epochs = 500
@@ -353,7 +353,7 @@ def main(train_imgs_np_file,
                     output + '/' + test_imgs_np_file_3[0:6] +
                     '_6_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
-                    sitk.GetImageFromArray(orig_mask_3),
+                    sitk.GetImageFromArray(orig_mask_4),
                     output + '/' + test_imgs_np_file_3[0:6] +
                     '_7_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
 
@@ -481,8 +481,6 @@ def main(train_imgs_np_file,
                 d_loss_real = discriminator.train_on_batch(mask_disc, ones)
                 d_loss_fake = discriminator.train_on_batch(
                     gen_mask_disc, zeros)
-                # Freeze the discriminator
-                # discriminator.trainable = False
 
                 # trainining GAN
                 # print('calculating GAN loss...')
