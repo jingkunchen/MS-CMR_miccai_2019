@@ -76,6 +76,7 @@ def predict(orig_num, orig_rows, orig_cols, output_file, start, end):
     orig_mask_1 = np.zeros([orig_num, orig_rows, orig_cols], dtype = 'float32')
 
     test_images = np.load(test_file)
+    print("test_images:",test_images.shape)
     test_images = test_images[start:end,:,:, np.newaxis]
 
     pred_masks_1 = adversarial_model.predict(test_images)
@@ -86,20 +87,28 @@ def predict(orig_num, orig_rows, orig_cols, output_file, start, end):
     sitk.WriteImage(sitk.GetImageFromArray(orig_mask_1),output_file)
 
 def main():
+    test_images = np.load(test_file)
+    print("test_images:",test_images.shape)
     shape_dict = get_shape_dict()
-    slice_count = 0
+    slice_count = -1
     for i in range(6,46):
         print(i)
         tmp = shape_dict[i]
         orig_num = tmp[0]
         orig_rows = tmp[1]
         orig_cols = tmp[2]
+        print("shape:", orig_num, orig_rows, orig_cols)
         output_file = output_path.replace("patient",str(i))
         
-        start = slice_count
-        end = slice_count + orig_num
+        start = slice_count + 1
+        print("start:",start)
+        slice_count = slice_count + orig_num
+        end = slice_count + 1
+        print("end:",end)
         predict(orig_num, orig_rows, orig_cols, output_file, start, end)
-        slice_count = slice_count + 1 + orig_num
+        
+        
+    print("slice_count:",slice_count)
 
 if __name__ == "__main__":
     main()
