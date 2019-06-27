@@ -310,19 +310,19 @@ def main(train_imgs_np_file,
                                     ("Dis unlabel loss",d_loss_unlabel_fake)])
              # ------------------------------
             # save weights on every 2nd epoch
-            if current_epoch % 9 == 0:
+            if current_epoch % 10 == 0:
                 gen_weights_path = os.path.join(
-                    './weight/gen_weights_epoch_%s.h5' % (current_epoch))
+                    './weight/unlabel_gen_weights_epoch_%s.h5' % (current_epoch))
                 generator_nn.save_weights(gen_weights_path, overwrite=True)
 
                 disc_weights_path = os.path.join(
-                    './weight/disc_weights_epoch_%s.h5' % (current_epoch))
+                    './weight/unlabel_disc_weights_epoch_%s.h5' % (current_epoch))
                 discriminator.save_weights(disc_weights_path, overwrite=True)
 
                 adversarial_weights_path = os.path.join(
-                    './weight/adversarial_weights_epoch_%s.h5' % (current_epoch))
+                    './weight/unlabel_adversarial_weights_epoch_%s.h5' % (current_epoch))
                 adversarial_model.save_weights(adversarial_weights_path, overwrite=True)
-            if eval_per_epoch and current_epoch % 1 == 0:
+            if eval_per_epoch and current_epoch % 10 == 0:
                 pred_masks_1 = adversarial_model.predict(test_imgs_1)
                 pred_masks_1 = pred_masks_1[0].argmax(axis=3)
                 pred_masks_2 = adversarial_model.predict(test_imgs_2)
@@ -361,19 +361,19 @@ def main(train_imgs_np_file,
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_1),
                     output + '/' + test_imgs_np_file_1[0:6] +
-                    '_4_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_4_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_2),
                     output + '/' + test_imgs_np_file_2[0:6] +
-                    '_5_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_5_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_3),
                     output + '/' + test_imgs_np_file_3[0:6] +
-                    '_6_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_6_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_4),
                     output + '/' + test_imgs_np_file_3[0:6] +
-                    '_7_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_7_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
 
                 dsc, h95, vs = get_eval_metrics(test_masks_1[:, :, :, 0],
                                                 pred_masks_1)
