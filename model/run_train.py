@@ -30,6 +30,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 @click.command()
 @click.argument('train_imgs_np_file', type=click.STRING)
+@click.argument('train_imgs_np_file_new', type=click.STRING)
 @click.argument('train_masks_np_file', type=click.STRING)
 @click.argument('output', type=click.STRING)
 @click.option('--pretrained_model',
@@ -91,6 +92,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '1'
     default='',
     help='path to save results on test case evaluated per epoch of training')
 def main(train_imgs_np_file,
+         train_imgs_np_file_new,
          train_masks_np_file,
          output,
          pretrained_model='',
@@ -139,6 +141,10 @@ def main(train_imgs_np_file,
         
 
     train_imgs = np.load(train_imgs_np_file)
+    train_imgs_unlabel = np.load(train_imgs_np_file_new)
+    train_imgs_unlabel = train_imgs_unlabel[:,:,:,np.newaxis]
+    print("train_imgs:",train_imgs.shape)
+    print("train_imgs_unlabel:",train_imgs_unlabel.shape)
     train_masks = np.load(train_masks_np_file)
 
     if use_weighted_crossentropy:
@@ -258,6 +264,17 @@ def main(train_imgs_np_file,
                 current_epoch) + '.h5'
             batch_idxs = len(train_imgs) // batch_size
             progbar = keras_generic_utils.Progbar(batch_idxs)
+
+            batch_idxs_unlabel = len(train_imgs_unlabel) // batch_size
+            for idx in range(0, batch_idxs_unlabel):
+                img_batch = train_imgs_unlabel[idx * batch_size:(idx + 1) * batch_size]
+                recon_masks_cat = generator_nn.predict(img_batch)
+                recon_masks_cat_new = np.concatenate((recon_masks_cat, img_batch),
+                                           axis=3)
+                d_loss_unlabel_fake = discriminator.train_on_batch(
+                    recon_masks_cat_new, zeros)
+                
+
             for idx in range(0, batch_idxs):
                 img_batch = train_imgs[idx * batch_size:(idx + 1) * batch_size]
                 masks_cat_batch = train_masks_cat[idx * batch_size:(idx + 1) *
@@ -289,10 +306,11 @@ def main(train_imgs_np_file,
                             values=[("Dis logloss", D_log_loss),
                                     ("Gen total", gen_total_loss),
                                     ("Gen L1 (mae)", gen_mae),
-                                    ("Gen logloss", gen_log_loss)])
+                                    ("Gen logloss", gen_log_loss),
+                                    ("Dis unlabel loss",d_loss_unlabel_fake)])
              # ------------------------------
             # save weights on every 2nd epoch
-            if current_epoch % 1 == 0:
+            if current_epoch % 9 == 0:
                 gen_weights_path = os.path.join(
                     './weight/gen_weights_epoch_%s.h5' % (current_epoch))
                 generator_nn.save_weights(gen_weights_path, overwrite=True)

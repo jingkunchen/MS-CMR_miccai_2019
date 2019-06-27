@@ -77,7 +77,7 @@ def predict(orig_num, orig_rows, orig_cols, output_file, start, end):
 
     test_images = np.load(test_file)
     print("test_images:",test_images.shape)
-    test_images = test_images[start:end,:,:, np.newaxis]
+    test_images = test_images[start:end,:,:,np.newaxis]
 
     pred_masks_1 = adversarial_model.predict(test_images)
     pred_masks_1 = pred_masks_1[0].argmax(axis=3)
