@@ -116,7 +116,7 @@ def main(train_imgs_np_file,
 
     num_classes = 4
     if not use_augmentation:
-        total_epochs = 100
+        total_epochs = 1000
         generator_epochs = 100
     else:
         total_epochs = 500

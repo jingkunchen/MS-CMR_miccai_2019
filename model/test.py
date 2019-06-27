@@ -15,9 +15,9 @@ num_classes = 4
 learn_rate = 2e-4
 learn_decay = 1e-8
 test_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/LGE_data_1ch_extra.npy"
-weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/adversarial_weights_epoch_100.h5"
+weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unlabel_cnn/adversarial_weights_epoch_50.h5"
 patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2lge"
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/test_patient_cnn_pred_epoch_100.nii.gz"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unlabel_cnn/test_patient_cnn_pred_epoch_50.nii.gz"
 
 opt_discriminator = Adam(lr=(learn_rate))
 
