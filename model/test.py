@@ -29,8 +29,13 @@ patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c
 # output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/split_unlabel_cnn/unlabel_split_test_patient_cnn_pred_epoch_460.nii.gz"
 
 # argumentation
+<<<<<<< HEAD
 weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/adversarial_weights_epoch_210.h5"
 output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/new_data_test_patient_cnn_pred_epoch_210.nii.gz"
+=======
+weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/argumentation/adversarial_weights_epoch_150.h5"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/argumentation/argumentation_test_patient_cnn_pred_epoch_150.nii.gz"
+>>>>>>> new data amd cut image scipt
 
 opt_discriminator = Adam(lr=(learn_rate))
 
