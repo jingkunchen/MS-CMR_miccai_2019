@@ -20,7 +20,11 @@ import time
 from decimal import Decimal
 import skimage.io as io
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> new data amd cut image scipt
 =======
  
 >>>>>>> new data amd cut image scipt
@@ -28,6 +32,7 @@ data_dir = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2l
 thresh = 1
 rows = 224
 cols = 224
+<<<<<<< HEAD
 <<<<<<< HEAD
 xmin = 1 
 xmax = 1
@@ -45,12 +50,17 @@ def show_img(data):
 
 
 =======
+=======
+>>>>>>> new data amd cut image scipt
 
 def show_img(data):
     for i in range(data.shape[0]):
         io.imshow(data[i,:,:], cmap = 'gray')
         # io.imshow(data[:,:], cmap = 'gray')
         io.show()
+<<<<<<< HEAD
+>>>>>>> new data amd cut image scipt
+=======
 >>>>>>> new data amd cut image scipt
 # label transform, 500-->1, 200-->2, 600-->3
 
@@ -200,6 +210,7 @@ for pp in range(1, 6):
 #     print(min(x),max(x),max(x)-min(x),round(min(x)/np.shape(gt_array)[1],2), round(max(x)/np.shape(gt_array)[1],2))
 #     print(min(y),max(y),max(y)-min(y),round(min(y)/np.shape(gt_array)[1],2), round(max(y)/np.shape(gt_array)[1],2))  
 
+<<<<<<< HEAD
     mask = np.zeros(np.shape(data_array), dtype = 'float32')
     mask[data_array >=thresh] = 1
 >>>>>>> new data amd cut image scipt
@@ -451,6 +462,101 @@ for pp in range(1, 36):
     print(min(x),max(x),max(x)-min(x),round(min(x)/np.shape(gt_array)[1],2), round(max(x)/np.shape(gt_array)[1],2))
     print(min(y),max(y),max(y)-min(y),round(min(y)/np.shape(gt_array)[1],2), round(max(y)/np.shape(gt_array)[1],2))   
 
+=======
+>>>>>>> new data amd cut image scipt
+    mask = np.zeros(np.shape(data_array), dtype = 'float32')
+    mask[data_array >=thresh] = 1
+    mask[data_array < thresh] = 0
+    for iii in range(np.shape(data_array)[0]):
+        mask[iii,:,:] = scipy.ndimage.morphology.binary_fill_holes(mask[iii,:,:])  #fill the holes inside br
+         
+    data_array = data_array - np.mean(data_array[mask == 1])
+    data_array /= np.std(data_array[mask == 1])    
+    rows_o = np.shape(data_array)[1]
+    cols_o = np.shape(data_array)[2]
+     
+    data_array_ = data_array[:, int((rows_o-rows)/2):int((rows_o-rows)/2)+rows, int((cols_o-cols)/2):int((cols_o-cols)/2)+cols]
+    gt_array_ = gt_array[:, int((rows_o-rows)/2):int((rows_o-rows)/2)+rows, int((cols_o-cols)/2):int((cols_o-cols)/2)+cols]
+    mask = mask[:, int((rows_o-rows)/2):int((rows_o-rows)/2)+rows, int((cols_o-cols)/2):int((cols_o-cols)/2)+cols]
+<<<<<<< HEAD
+     
+ 
+=======
+ 
+    LGE_data_1ch.extend(np.float32(data_array_))
+    LGE_gt_1ch.extend(np.float32(gt_array_))
+ 
+#    for iii in range(np.shape(data_array)[0]):
+#        scipy.misc.imsave(img_dir+'mask_pat_'+str(pp)+'_'+str(iii)+'.png', mask[iii, ...])
+#        scipy.misc.imsave(img_dir+'img_pat_'+str(pp)+'_'+str(iii)+'.png', data_array_[iii, ...])
+#        scipy.misc.imsave(img_dir+'gt_pat_'+str(pp)+'_'+str(iii)+'.png', gt_array_[iii, ...])
+#LGE_data_1ch = np.array(LGE_data_1ch)
+#LGE_gt_1ch = np.array(LGE_gt_1ch)
+LGE_data_1ch = np.asarray(LGE_data_1ch)
+LGE_gt_1ch = np.asarray(LGE_gt_1ch)
+LGE_gt_1ch[LGE_gt_1ch == 500] = 1
+LGE_gt_1ch[LGE_gt_1ch == 200] = 2
+LGE_gt_1ch[LGE_gt_1ch == 600] = 3
+np.save('LGE_data_1ch.npy',LGE_data_1ch)
+np.save('LGE_gt_1ch.npy', LGE_gt_1ch)
+ 
+ 
+##### T2 
+T2_data_1ch = []
+T2_gt_1ch = [] 
+img_dir = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/t2_images/'
+if not os.path.exists(img_dir):
+    os.makedirs(img_dir)
+gt_dir_1 = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/t2gt/'
+
+
+for pp in range(1, 36):
+    data_name = data_dir+'patient'+str(pp)+'_T2.nii.gz'
+    gt_name = gt_dir_1+'patient'+str(pp)+'_T2_manual.nii.gz'
+
+    data_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_name)))
+    gt_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(gt_name)))
+    data_array = np.nan_to_num(data_array, copy=True)
+    gt_array = np.nan_to_num(gt_array, copy=True)
+    
+#     count = 0
+#     for image in data_array:
+#         new_image = resize(image, (480,480), anti_aliasing=True)
+#         if count == 0:
+#                 new_data_array = new_image[np.newaxis,:,:]
+#         else:
+#                 new_data_array = np.concatenate((new_data_array, new_image[np.newaxis,:,:]), axis=0)
+                
+#         count += 1
+#     data_array = new_data_array
+#     new_gt_array = 0
+#     count = 0
+#     for gt in gt_array:
+#         new_gt = resize(gt, (480,480), anti_aliasing=True)
+#         if count == 0:
+#                 new_gt_array = new_gt[np.newaxis,:,:]
+#         else:
+#                 new_gt_array = np.concatenate((new_gt_array, new_gt[np.newaxis,:,:]), axis=0)
+                
+#         count += 1
+#     gt_array = new_gt_array.astype(int)
+    x = []
+    y = []
+    count = 0
+    for image in gt_array:
+        for i in range(np.shape(gt_array)[1]):
+            for j in range(np.shape(gt_array)[2]):
+                if image[i][j] != 0:
+                    if j == 0:
+                        gt_array[count,25:75,0:50] = 0
+                    else:
+                        x.append(i)
+                        y.append(j)
+        count += 1
+    
+    print(min(x),max(x),max(x)-min(x),round(min(x)/np.shape(gt_array)[1],2), round(max(x)/np.shape(gt_array)[1],2))
+    print(min(y),max(y),max(y)-min(y),round(min(y)/np.shape(gt_array)[1],2), round(max(y)/np.shape(gt_array)[1],2))   
+
     mask = np.zeros(np.shape(data_array), dtype = 'float32')
     mask[data_array >=thresh] = 1
     mask[data_array < thresh] = 0
@@ -467,6 +573,7 @@ for pp in range(1, 36):
     mask = mask[:, int((rows_o-rows)/2):int((rows_o-rows)/2)+rows, int((cols_o-cols)/2):int((cols_o-cols)/2)+cols]
      
  
+>>>>>>> new data amd cut image scipt
     print (np.max(data_array_))
     T2_data_1ch.extend(np.float32(data_array_))
     T2_gt_1ch.extend(np.float32(gt_array_))
@@ -478,6 +585,9 @@ for pp in range(1, 36):
         scipy.misc.imsave(img_dir+'gt_pat_'+str(pp)+'_'+str(iii)+'.png', gt_array_[iii, ...])
  
  
+<<<<<<< HEAD
+>>>>>>> new data amd cut image scipt
+=======
 >>>>>>> new data amd cut image scipt
 #T2_data_1ch_ = np.zeros([np.shape(T2_data_1ch)[0], rows, cols])
 #T2_gt_1ch_ = np.zeros([np.shape(T2_data_1ch)[0], rows, cols])
@@ -492,6 +602,7 @@ T2_gt_1ch[T2_gt_1ch == 600] = 3
 np.save('T2_data_1ch.npy', T2_data_1ch)
 np.save('T2_gt_1ch.npy', T2_gt_1ch)
 <<<<<<< HEAD
+<<<<<<< HEAD
 # print(xmin,xmax,ymin,ymax, xlenmin, ylenmin)
 # xmin = 1 
 # xmax = 1
@@ -504,17 +615,23 @@ np.save('T2_gt_1ch.npy', T2_gt_1ch)
 C0_data_1ch = []
 C0_gt_1ch = []
 =======
+=======
+>>>>>>> new data amd cut image scipt
  
  
 #######C0
 #
 C0_data_1ch = []
 C0_gt_1ch = [] 
+<<<<<<< HEAD
+>>>>>>> new data amd cut image scipt
+=======
 >>>>>>> new data amd cut image scipt
 img_dir = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0_images/'
 if not os.path.exists(img_dir):
     os.makedirs(img_dir)
 gt_dir_1 = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0gt/'
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 for pp in range(1, 36):
@@ -525,6 +642,8 @@ for pp in range(1, 36):
     gt_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(gt_name)))
     print(np.shape(data_array))
 =======
+=======
+>>>>>>> new data amd cut image scipt
  
 for pp in range(1, 36):
     data_name = data_dir+'patient'+str(pp)+'_C0.nii.gz'
@@ -532,6 +651,9 @@ for pp in range(1, 36):
     data_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(data_name)))
     gt_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(gt_name)))
 #     print(np.shape(data_array))
+<<<<<<< HEAD
+>>>>>>> new data amd cut image scipt
+=======
 >>>>>>> new data amd cut image scipt
 #     new_data_array = 0
 #     count = 0
@@ -542,7 +664,11 @@ for pp in range(1, 36):
 #         else:
 #                 new_data_array = np.concatenate((new_data_array, new_image[np.newaxis,:,:]), axis=0)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> new data amd cut image scipt
 =======
                 
 >>>>>>> new data amd cut image scipt
@@ -558,7 +684,11 @@ for pp in range(1, 36):
 #         else:
 #                 new_gt_array = np.concatenate((new_gt_array, new_gt[np.newaxis,:,:]), axis=0)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> new data amd cut image scipt
 =======
                 
 >>>>>>> new data amd cut image scipt
@@ -571,8 +701,12 @@ for pp in range(1, 36):
             for j in range(np.shape(gt_array)[2]):
                 if image[i][j] != 0:
 <<<<<<< HEAD
+<<<<<<< HEAD
                     if i < 30 or j <30:
                         print(image.shape)
+=======
+                    if i == 0 or j == 0:
+>>>>>>> new data amd cut image scipt
 =======
                     if i == 0 or j == 0:
 >>>>>>> new data amd cut image scipt
@@ -580,6 +714,7 @@ for pp in range(1, 36):
                     else:
                         x.append(i)
                         y.append(j)
+<<<<<<< HEAD
 <<<<<<< HEAD
     print("idx:", pp)
     print(min(x), max(x),
@@ -649,6 +784,8 @@ for pp in range(1, 36):
             gt_array_[iii, ...])
 
 =======
+=======
+>>>>>>> new data amd cut image scipt
     print("idx:",pp)
     print(min(x),max(x),max(x)-min(x),round(min(x)/np.shape(gt_array)[1],2), round(max(x)/np.shape(gt_array)[1],2))
     print(min(y),max(y),max(y)-min(y),round(min(y)/np.shape(gt_array)[1],2), round(max(y)/np.shape(gt_array)[1],2))  
@@ -673,6 +810,9 @@ for pp in range(1, 36):
         scipy.misc.imsave(img_dir+'img_pat_'+str(pp)+'_'+str(iii)+'.png', data_array_[iii, ...])
         scipy.misc.imsave(img_dir+'gt_pat_'+str(pp)+'_'+str(iii)+'.png', gt_array_[iii, ...])
          
+<<<<<<< HEAD
+>>>>>>> new data amd cut image scipt
+=======
 >>>>>>> new data amd cut image scipt
 C0_data_1ch = np.asarray(C0_data_1ch)
 C0_gt_1ch = np.asarray(C0_gt_1ch)
@@ -692,9 +832,14 @@ new_data_array = np.concatenate((new_data_array, T2_data_1ch), axis=0)
 new_gt_array = np.concatenate((LGE_gt_1ch, C0_gt_1ch), axis=0)
 new_gt_array = np.concatenate((new_gt_array, T2_gt_1ch), axis=0)
 <<<<<<< HEAD
+<<<<<<< HEAD
 np.save('train_data.npy', C0_data_1ch[:, :, :, np.newaxis])
 np.save('train_gt.npy', C0_gt_1ch[:, :, :, np.newaxis])
 # print(xmin,xmax,ymin,ymax, xlenmin, ylenmin)
+=======
+np.save('train_data.npy', C0_data_1ch)
+np.save('train_gt.npy', C0_gt_1ch)
+>>>>>>> new data amd cut image scipt
 =======
 np.save('train_data.npy', C0_data_1ch)
 np.save('train_gt.npy', C0_gt_1ch)
