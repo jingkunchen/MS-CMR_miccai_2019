@@ -30,7 +30,6 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 @click.command()
 @click.argument('train_imgs_np_file', type=click.STRING)
-@click.argument('train_imgs_np_file_new', type=click.STRING)
 @click.argument('train_masks_np_file', type=click.STRING)
 @click.argument('output', type=click.STRING)
 @click.option('--pretrained_model',
@@ -92,7 +91,6 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '1'
     default='',
     help='path to save results on test case evaluated per epoch of training')
 def main(train_imgs_np_file,
-         train_imgs_np_file_new,
          train_masks_np_file,
          output,
          pretrained_model='',
@@ -119,7 +117,8 @@ def main(train_imgs_np_file,
         total_epochs = 1000
         generator_epochs = 100
     else:
-        total_epochs = 500
+        total_epochs = 1000
+        generator_epochs = 100
     n_images_per_epoch = 616
     batch_size = 1
     learn_rate = 2e-4
@@ -141,11 +140,41 @@ def main(train_imgs_np_file,
         
 
     train_imgs = np.load(train_imgs_np_file)
-    train_imgs_unlabel = np.load(train_imgs_np_file_new)
-    train_imgs_unlabel = train_imgs_unlabel[:,:,:,np.newaxis]
-    print("train_imgs:",train_imgs.shape)
-    print("train_imgs_unlabel:",train_imgs_unlabel.shape)
     train_masks = np.load(train_masks_np_file)
+    print("load_img:",train_imgs.shape)
+    print("load_mask:",train_masks.shape)
+
+    train_imgs = np.concatenate((train_imgs, test_imgs_1), axis=0)
+    train_imgs = np.concatenate((train_imgs, test_imgs_2), axis=0)
+    train_imgs_new  = train_imgs.copy()
+    train_masks = np.concatenate((train_masks, test_masks_1), axis=0)
+    train_masks = np.concatenate((train_masks, test_masks_2), axis=0)
+    train_masks_new  = train_masks.copy()
+    count_i = 0
+    count = 0
+    count_list = []
+    for i in train_masks:
+        count_j = 0
+        sum = 0
+        for j in i:
+            count_j +=1
+            count_k = 0
+            for k in j:
+                count_k +=1
+                sum +=int(k[0])
+        if sum == 0:
+            delete_number = count_i - count
+            train_imgs_new = np.delete(train_imgs_new, delete_number, axis=0)
+            train_masks_new = np.delete(train_masks_new, delete_number, axis=0)
+
+            count += 1
+            print("empty:",count, count_i)
+            
+        count_i +=1
+    train_imgs = train_imgs_new
+    train_masks = train_masks_new
+    print("train_imgs_result:",train_imgs.shape)
+    print("train_masks_result:",train_masks.shape)
 
     if use_weighted_crossentropy:
         class_weights = class_weight.compute_class_weight(
@@ -153,11 +182,10 @@ def main(train_imgs_np_file,
 
     channels_num = train_imgs.shape[-1]
     img_shape = (train_imgs.shape[1], train_imgs.shape[2], channels_num)
-    # mask_shape = (train_masks.shape[1], train_masks.shape[2], num_classes)
-    # generator_nn = get_model(img_shape=img_shape, num_classes=num_classes)
-    mask_shape = (train_masks.shape[1], train_masks.shape[2], 2)
+    mask_shape = (train_masks.shape[1], train_masks.shape[2], num_classes)
 
-    generator_nn = get_model(img_shape=img_shape, num_classes=2)
+    generator_nn = get_model(img_shape=img_shape, num_classes=num_classes)
+
     if pretrained_model != '':
         assert os.path.isfile(pretrained_model)
         generator_nn.load_weights(pretrained_model)
@@ -181,8 +209,7 @@ def main(train_imgs_np_file,
 
     else:
         train_masks_cat = to_categorical(train_masks, num_classes)
-        num_classes = 2
-        train_masks_cat = train_masks_cat[:,:,:,2:4]
+        num_classes = 4
         print("train_masks_cat:", train_masks_cat.shape)
     
     if use_weighted_crossentropy:
@@ -271,16 +298,6 @@ def main(train_imgs_np_file,
             batch_idxs = len(train_imgs) // batch_size
             progbar = keras_generic_utils.Progbar(batch_idxs)
 
-            batch_idxs_unlabel = len(train_imgs_unlabel) // batch_size
-            for idx in range(0, batch_idxs_unlabel):
-                img_batch = train_imgs_unlabel[idx * batch_size:(idx + 1) * batch_size]
-                recon_masks_cat = generator_nn.predict(img_batch)
-                recon_masks_cat_new = np.concatenate((recon_masks_cat, img_batch),
-                                           axis=3)
-                d_loss_unlabel_fake = discriminator.train_on_batch(
-                    recon_masks_cat_new, zeros)
-                
-
             for idx in range(0, batch_idxs):
                 img_batch = train_imgs[idx * batch_size:(idx + 1) * batch_size]
                 masks_cat_batch = train_masks_cat[idx * batch_size:(idx + 1) *
@@ -312,21 +329,20 @@ def main(train_imgs_np_file,
                             values=[("Dis logloss", D_log_loss),
                                     ("Gen total", gen_total_loss),
                                     ("Gen L1 (mae)", gen_mae),
-                                    ("Gen logloss", gen_log_loss),
-                                    ("Dis unlabel loss",d_loss_unlabel_fake)])
+                                    ("Gen logloss", gen_log_loss)])
              # ------------------------------
             # save weights on every 2nd epoch
             if current_epoch % 10 == 0:
                 gen_weights_path = os.path.join(
-                    './weight/unlabel_gen_weights_epoch_%s.h5' % (current_epoch))
+                    './weight/gen_weights_epoch_%s.h5' % (current_epoch))
                 generator_nn.save_weights(gen_weights_path, overwrite=True)
 
                 disc_weights_path = os.path.join(
-                    './weight/unlabel_disc_weights_epoch_%s.h5' % (current_epoch))
+                    './weight/disc_weights_epoch_%s.h5' % (current_epoch))
                 discriminator.save_weights(disc_weights_path, overwrite=True)
 
                 adversarial_weights_path = os.path.join(
-                    './weight/unlabel_adversarial_weights_epoch_%s.h5' % (current_epoch))
+                    './weight/adversarial_weights_epoch_%s.h5' % (current_epoch))
                 adversarial_model.save_weights(adversarial_weights_path, overwrite=True)
             if eval_per_epoch and current_epoch % 10 == 0:
                 pred_masks_1 = adversarial_model.predict(test_imgs_1)
@@ -367,19 +383,19 @@ def main(train_imgs_np_file,
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_1),
                     output + '/' + test_imgs_np_file_1[0:6] +
-                    '_4_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_4_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_2),
                     output + '/' + test_imgs_np_file_2[0:6] +
-                    '_5_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_5_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_3),
                     output + '/' + test_imgs_np_file_3[0:6] +
-                    '_6_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_6_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
                 sitk.WriteImage(
                     sitk.GetImageFromArray(orig_mask_4),
                     output + '/' + test_imgs_np_file_3[0:6] +
-                    '_7_unlabel_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
+                    '_7_cnn_pred_epoch_' + str(current_epoch) + '.nii.gz')
 
                 dsc, h95, vs = get_eval_metrics(test_masks_1[:, :, :, 0],
                                                 pred_masks_1)
