@@ -153,9 +153,11 @@ def main(train_imgs_np_file,
 
     channels_num = train_imgs.shape[-1]
     img_shape = (train_imgs.shape[1], train_imgs.shape[2], channels_num)
-    mask_shape = (train_masks.shape[1], train_masks.shape[2], num_classes)
+    # mask_shape = (train_masks.shape[1], train_masks.shape[2], num_classes)
+    # generator_nn = get_model(img_shape=img_shape, num_classes=num_classes)
+    mask_shape = (train_masks.shape[1], train_masks.shape[2], 2)
 
-    generator_nn = get_model(img_shape=img_shape, num_classes=num_classes)
+    generator_nn = get_model(img_shape=img_shape, num_classes=2)
     if pretrained_model != '':
         assert os.path.isfile(pretrained_model)
         generator_nn.load_weights(pretrained_model)
@@ -172,13 +174,17 @@ def main(train_imgs_np_file,
         train_masks = np.concatenate((train_masks, masks_aug), axis=0)
     print("train_imgs, train_masks, num_classes:", train_imgs.shape,
           train_masks.shape, num_classes)
+    
     if use_patch_gan_discrimator:
-        train_masks_cat = to_categorical(train_masks, 4)
+        train_masks_cat = to_categorical(train_masks, num_classes)
         print("train_masks_cat:", train_masks_cat.shape)
 
     else:
         train_masks_cat = to_categorical(train_masks, num_classes)
-
+        num_classes = 2
+        train_masks_cat = train_masks_cat[:,:,:,2:4]
+        print("train_masks_cat:", train_masks_cat.shape)
+    
     if use_weighted_crossentropy:
         opt_discriminator = Adam(lr=(learn_rate))
         loss_function = weighted_categorical_crossentropy(class_weights)

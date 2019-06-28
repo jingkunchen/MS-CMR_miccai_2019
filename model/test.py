@@ -17,12 +17,20 @@ learn_decay = 1e-8
 test_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/LGE_data_1ch_extra.npy"
 patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2lge"
 # simple cnn
-weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/simple_cnn/adversarial_weights_epoch_300.h5"
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/simple_cnn/test_patient_cnn_pred_epoch_300.nii.gz"
+# weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/simple_cnn/adversarial_weights_epoch_300.h5"
+# output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/simple_cnn/test_patient_cnn_pred_epoch_300.nii.gz"
 
 # unlabel
-# weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unlabel_cnn/unlabel_adversarial_weights_epoch_300.h5"
-# output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unlabel_cnn/unlabel_test_patient_cnn_pred_epoch_300.nii.gz"
+# weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unlabel_cnn/unlabel_adversarial_weights_epoch_1000.h5"
+# output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unlabel_cnn/unlabel_test_patient_cnn_pred_epoch_1000.nii.gz"
+
+# split_unlabel_cnn
+# weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/split_unlabel_cnn/unlabel_adversarial_weights_epoch_460.h5"
+# output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/split_unlabel_cnn/unlabel_split_test_patient_cnn_pred_epoch_460.nii.gz"
+
+# argumentation
+weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/argumentation/unlabel_adversarial_weights_epoch_190.h5"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/argumentation/unlabel_split_test_patient_cnn_pred_epoch_190.nii.gz"
 
 opt_discriminator = Adam(lr=(learn_rate))
 
