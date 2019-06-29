@@ -144,11 +144,11 @@ def main(train_imgs_np_file,
     print("load_img:",train_imgs.shape)
     print("load_mask:",train_masks.shape)
 
-    train_imgs = np.concatenate((train_imgs, test_imgs_1), axis=0)
-    train_imgs = np.concatenate((train_imgs, test_imgs_2), axis=0)
+    # train_imgs = np.concatenate((train_imgs, test_imgs_1), axis=0)
+    # train_imgs = np.concatenate((train_imgs, test_imgs_2), axis=0)
     train_imgs_new  = train_imgs.copy()
-    train_masks = np.concatenate((train_masks, test_masks_1), axis=0)
-    train_masks = np.concatenate((train_masks, test_masks_2), axis=0)
+    # train_masks = np.concatenate((train_masks, test_masks_1), axis=0)
+    # train_masks = np.concatenate((train_masks, test_masks_2), axis=0)
     train_masks_new  = train_masks.copy()
     count_i = 0
     count = 0
@@ -344,7 +344,7 @@ def main(train_imgs_np_file,
                 adversarial_weights_path = os.path.join(
                     './weight/adversarial_weights_epoch_%s.h5' % (current_epoch))
                 adversarial_model.save_weights(adversarial_weights_path, overwrite=True)
-            if eval_per_epoch and current_epoch % 10 == 0:
+            if eval_per_epoch and current_epoch % 100 == 0:
                 pred_masks_1 = adversarial_model.predict(test_imgs_1)
                 pred_masks_1 = pred_masks_1[0].argmax(axis=3)
                 pred_masks_2 = adversarial_model.predict(test_imgs_2)

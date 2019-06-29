@@ -35,6 +35,7 @@ patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/adversarial_weights_epoch_210.h5"
 output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/new_data_test_patient_cnn_pred_epoch_210.nii.gz"
 =======
@@ -61,6 +62,10 @@ output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/new
 weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/adversarial_weights_epoch_210.h5"
 output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/new_data_test_patient_cnn_pred_epoch_210.nii.gz"
 >>>>>>> add new cut image
+=======
+weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/newdata_cut_no/adversarial_weights_epoch_110.h5"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/newdata_cut_no/new_data_test_patient_cnn_pred_epoch_110.nii.gz"
+>>>>>>> version 2
 
 opt_discriminator = Adam(lr=(learn_rate))
 
