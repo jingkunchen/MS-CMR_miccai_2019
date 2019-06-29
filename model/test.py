@@ -32,6 +32,7 @@ patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/adversarial_weights_epoch_210.h5"
 output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/argumentation/new_data_test_patient_cnn_pred_epoch_210.nii.gz"
 =======
@@ -42,6 +43,10 @@ output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/arg
 weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/argumentation/adversarial_weights_epoch_150.h5"
 output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/argumentation/argumentation_test_patient_cnn_pred_epoch_150.nii.gz"
 >>>>>>> new data amd cut image scipt
+=======
+weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unargument_remove0/adversarial_weights_epoch_300.h5"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unargument_remove0/remove0_test_patient_cnn_pred_epoch_300.nii.gz"
+>>>>>>> save image from 3 to 4
 =======
 weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unargument_remove0/adversarial_weights_epoch_300.h5"
 output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/unargument_remove0/remove0_test_patient_cnn_pred_epoch_300.nii.gz"

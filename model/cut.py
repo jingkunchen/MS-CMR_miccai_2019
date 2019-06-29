@@ -834,6 +834,7 @@ new_gt_array = np.concatenate((new_gt_array, T2_gt_1ch), axis=0)
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 np.save('train_data.npy', C0_data_1ch[:, :, :, np.newaxis])
 np.save('train_gt.npy', C0_gt_1ch[:, :, :, np.newaxis])
 # print(xmin,xmax,ymin,ymax, xlenmin, ylenmin)
@@ -845,6 +846,10 @@ np.save('train_gt.npy', C0_gt_1ch)
 np.save('train_data.npy', C0_data_1ch)
 np.save('train_gt.npy', C0_gt_1ch)
 >>>>>>> new data amd cut image scipt
+=======
+np.save('train_data.npy', C0_data_1ch[:,:,:,np.newaxis])
+np.save('train_gt.npy', C0_gt_1ch[:,:,:,np.newaxis])
+>>>>>>> save image from 3 to 4
 =======
 np.save('train_data.npy', C0_data_1ch[:,:,:,np.newaxis])
 np.save('train_gt.npy', C0_gt_1ch[:,:,:,np.newaxis])
