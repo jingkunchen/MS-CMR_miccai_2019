@@ -66,8 +66,8 @@ for pp in range(6, 46):
     y = []
     print("idx:", pp)
     for image in gt_array:
-        tmp = dilation(image, square(3))
-        show_img_single(tmp)
+        # tmp = dilation(image, square(3))
+        # show_img_single(tmp)
         for i in range(np.shape(gt_array)[1]):
             for j in range(np.shape(gt_array)[2]):
                 if image[i][j] != 0:
@@ -79,15 +79,17 @@ for pp in range(6, 46):
     print(min(x),max(x),max(x)-min(x),round(min(x)/np.shape(gt_array)[1],2), round(max(x)/np.shape(gt_array)[1],2))
     print(min(y),max(y),max(y)-min(y),round(min(y)/np.shape(gt_array)[1],2), round(max(y)/np.shape(gt_array)[1],2))
 
-    if gt_array.shape[1] == 480 or  gt_array.shape[1] == 512:
+    if gt_array.shape[1] == 480 or gt_array.shape[1] == 512:
         data_array = data_array[:,136:360,136:360]
         gt_array = gt_array[:,136:360,136:360]
-    if gt_array.shape[1] == 400:
+    elif int(gt_array.shape[1]) == 400:
         data_array = data_array[:,88:312,88:312]
-    if gt_array.shape[1] == 224:
+    elif int(gt_array.shape[1]) == 432:
+        data_array = data_array[:,104:328,104:328]
+    elif gt_array.shape[1] == 224:
         pass
     else:
-        print("error:",gt_array.shape)
+        print("error:",gt_array.shape, int(gt_array.shape[1]) == 400)
     
     mask = np.zeros(np.shape(data_array), dtype='float32')
     mask[data_array >= thresh] = 1
@@ -125,3 +127,5 @@ LGE_gt_1ch[LGE_gt_1ch == 200] = 2
 LGE_gt_1ch[LGE_gt_1ch == 600] = 3
 np.save('LGE_data_1ch_extra.npy', LGE_data_1ch)
 np.save('LGE_gt_1ch_extra.npy', LGE_gt_1ch)
+print("LGE_gt_1ch:",LGE_gt_1ch.shape)
+print(img_count)

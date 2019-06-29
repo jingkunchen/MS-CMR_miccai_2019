@@ -242,7 +242,6 @@ for pp in range(1, 6):
     
 >>>>>>> version 2
     print(np.shape(data_array))
-    print(np.shape(gt_array))
 
 
     # new_data_array = 0
@@ -561,7 +560,7 @@ for pp in range(1, 36):
     elif gt_array.shape[1] == 224:
         pass
     else:
-        print("error:",gt_array.shape,gt_array.shape == 256)
+        print("error:",gt_array.shape)
     
 =======
                     if i <30 or j<30:
