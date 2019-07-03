@@ -14,6 +14,8 @@ from keras.layers import Input,Concatenate
 from keras.utils import to_categorical
 from keras.models import Model
 from keras.utils import generic_utils as keras_generic_utils
+from keras import backend as K
+# from keras.losses import categorical_crossentropy
 
 from models.DRUNet32f import get_model
 from models.CNN import build_discriminator
@@ -27,6 +29,20 @@ from keras.optimizers import Adam, RMSprop
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
+smooth=0.5
+
+def dice_coef_for_training(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+
+def dice_coef_loss(y_true, y_pred):
+    x0 = 1.-dice_coef_for_training(1.-y_true[:,:,:,0], 1.-y_pred[:,:,:,0])
+    x1 = 1.-dice_coef_for_training(y_true[:,:,:,1], y_pred[:,:,:,1])
+    x2 = 1.-dice_coef_for_training(y_true[:,:,:,2], y_pred[:,:,:,2])
+    x3 = 1.-dice_coef_for_training(y_true[:,:,:,3], y_pred[:,:,:,3])
+    return x0+x1+x2+x3
 
 @click.command()
 @click.argument('train_imgs_np_file', type=click.STRING)
@@ -115,12 +131,13 @@ def main(train_imgs_np_file,
     num_classes = 4
     if not use_augmentation:
         total_epochs = 1000
-        generator_epochs = 100
+        generator_epochs = 30
     else:
         total_epochs = 1000
         generator_epochs = 100
     n_images_per_epoch = 616
     batch_size = 1
+    # batch_size = 16
     learn_rate = 2e-4
     learn_decay = 1e-8
 
@@ -144,11 +161,9 @@ def main(train_imgs_np_file,
     print("load_img:",train_imgs.shape)
     print("load_mask:",train_masks.shape)
 
-    # train_imgs = np.concatenate((train_imgs, test_imgs_1), axis=0)
-    # train_imgs = np.concatenate((train_imgs, test_imgs_2), axis=0)
+
     train_imgs_new  = train_imgs.copy()
-    # train_masks = np.concatenate((train_masks, test_masks_1), axis=0)
-    # train_masks = np.concatenate((train_masks, test_masks_2), axis=0)
+
     train_masks_new  = train_masks.copy()
     count_i = 0
     count = 0
@@ -225,6 +240,7 @@ def main(train_imgs_np_file,
     elif use_cnn or use_cnn_discrimator:
         opt_discriminator = Adam(lr=(learn_rate))
         loss_function = 'categorical_crossentropy'
+        # loss_function = dice_coef_loss
     logging.basicConfig(filename='UNET_loss.log', level=logging.INFO)
 
     #use cnn discrimator
@@ -237,7 +253,8 @@ def main(train_imgs_np_file,
         discriminator.compile(loss='binary_crossentropy',
                               optimizer=opt_discriminator)
         discriminator.summary()
-        generator_nn.compile(loss='categorical_crossentropy',
+
+        generator_nn.compile(loss=loss_function,
                              optimizer=opt_discriminator)
         img = Input(shape=img_shape)
         rec_mask = generator_nn(img)
@@ -245,8 +262,9 @@ def main(train_imgs_np_file,
         discriminator.trainable = False
         validity = discriminator(rec_mask_new)
         adversarial_model = Model(img, [rec_mask, validity], name='D')
+        
         adversarial_model.compile(
-            loss=['categorical_crossentropy', 'binary_crossentropy'],
+            loss=[loss_function, 'binary_crossentropy'],
             loss_weights=[1, 1],
             optimizer=optimizer)
 
@@ -870,7 +888,7 @@ def main(train_imgs_np_file,
         discriminator.compile(loss='binary_crossentropy',
                               optimizer=opt_discriminator)
         discriminator.summary()
-        generator_nn.compile(loss='categorical_crossentropy',
+        generator_nn.compile(loss=loss_function,
                              optimizer=opt_discriminator)
         img = Input(shape=img_shape)
         rec_mask = generator_nn(img)
@@ -879,7 +897,7 @@ def main(train_imgs_np_file,
         validity = discriminator(rec_mask)
         adversarial_model = Model(img, [rec_mask, validity], name='D')
         adversarial_model.compile(
-            loss=['categorical_crossentropy', 'binary_crossentropy'],
+            loss=[loss_function, 'binary_crossentropy'],
             loss_weights=[1, 1],
             optimizer=optimizer)
         # discriminator.trainable = False
@@ -1008,7 +1026,7 @@ def main(train_imgs_np_file,
         generator_val.summary()
         generator_img.summary()
 
-        generator_img.compile(loss='categorical_crossentropy',
+        generator_img.compile(loss=loss_function,
                               optimizer=optimizer)
 
         generator_val.compile(loss='binary_crossentropy', optimizer=optimizer)

@@ -14,7 +14,7 @@ masks_shape= (224, 224, 4)
 num_classes = 4
 learn_rate = 2e-4
 learn_decay = 1e-8
-test_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/LGE_data_1ch_extra.npy"
+test_file = "/Users/chenjingkun/Documents/code/python/MS-CMR_miccai_2019/model/resize_LGE_data_1ch_extra.npy"
 patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2lge"
 # simple cnn
 # weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/simple_cnn/adversarial_weights_epoch_300.h5"
@@ -29,6 +29,7 @@ patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c
 # output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/split_unlabel_cnn/unlabel_split_test_patient_cnn_pred_epoch_460.nii.gz"
 
 # argumentation
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -66,6 +67,10 @@ output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/new
 weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/newdata_cut_no/adversarial_weights_epoch_110.h5"
 output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/newdata/newdata_cut_no/new_data_test_patient_cnn_pred_epoch_110.nii.gz"
 >>>>>>> version 2
+=======
+weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/adversarial_weights_epoch_30.h5"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/test_patient_cnn_pred_epoch_30.nii.gz"
+>>>>>>> resize all to 480*480
 
 opt_discriminator = Adam(lr=(learn_rate))
 
@@ -121,7 +126,8 @@ def get_shape_dict():
 
 def predict(orig_num, orig_rows, orig_cols, output_file, start, end):
     print("orig_num, orig_rows, orig_cols, output_file, start, end:",orig_num, orig_rows, orig_cols, output_file, start, end)
-    orig_mask_1 = np.zeros([orig_num, orig_rows, orig_cols], dtype = 'float32')
+    # orig_mask_1 = np.zeros([orig_num, orig_rows, orig_cols], dtype = 'float32')
+    orig_mask_1 = np.zeros([orig_num, 480, 480], dtype = 'float32')
 
     test_images = np.load(test_file)
     print("test_images:",test_images.shape)
@@ -131,6 +137,22 @@ def predict(orig_num, orig_rows, orig_cols, output_file, start, end):
     pred_masks_1 = pred_masks_1[0].argmax(axis=3)
     rows = np.shape(pred_masks_1)[1]
     cols = np.shape(pred_masks_1)[2]
+    # if orig_rows == 480 or orig_rows == 512:
+    #     orig_mask_1[:, 136:360, 136:360] = pred_masks_1
+    # elif int(orig_rows) == 400:
+    #     orig_mask_1[:, 88:312, 88:312] = pred_masks_1
+    #     # data_array = data_array[:,88:312,88:312]
+    # elif int(orig_rows) == 432:
+    #     orig_mask_1[:, 104:328, 104:328] = pred_masks_1
+    #     # data_array = data_array[:,104:328,104:328]
+    # elif orig_rows == 224:
+    #     orig_mask_1 = pred_masks_1
+    # else:
+    #     print("error:",orig_rows, orig_rows == 400)
+    # print("rows:",rows)
+    # print("cols:",cols)
+    # print("rows:",int((orig_rows-rows)/2),int((orig_rows-rows)/2)+rows)
+    # print("cols:",int((orig_cols-cols)/2),int((orig_cols-cols)/2)+cols)
     orig_mask_1[:, int((orig_rows-rows)/2):int((orig_rows-rows)/2)+rows, int((orig_cols-cols)/2):int((orig_cols-cols)/2)+cols] = pred_masks_1
     sitk.WriteImage(sitk.GetImageFromArray(orig_mask_1),output_file)
 
