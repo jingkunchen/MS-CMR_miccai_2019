@@ -29,7 +29,6 @@ from keras.optimizers import Adam, RMSprop
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
-smooth=0.5
 
 def dice_coef_for_training(y_true, y_pred):
     y_true_f = K.flatten(y_true)
@@ -38,15 +37,19 @@ def dice_coef_for_training(y_true, y_pred):
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
 
 def dice_coef_loss(y_true, y_pred):
-    x0 = 1.-dice_coef_for_training(1.-y_true[:,:,:,0], 1.-y_pred[:,:,:,0])
-    x1 = 1.-dice_coef_for_training(y_true[:,:,:,1], y_pred[:,:,:,1])
-    x2 = 1.-dice_coef_for_training(y_true[:,:,:,2], y_pred[:,:,:,2])
-    x3 = 1.-dice_coef_for_training(y_true[:,:,:,3], y_pred[:,:,:,3])
+    x0 = 1.-dice_coef_for_training(y_true[0], y_pred[0])
+    x1 = 1.-dice_coef_for_training(y_true[1], y_pred[1])
+    x2 = 1.-dice_coef_for_training(y_true[2], y_pred[2])
+    x3 = 1.-dice_coef_for_training(y_true[3], y_pred[3])
     return x0+x1+x2+x3
 
 @click.command()
-@click.argument('train_imgs_np_file', type=click.STRING)
-@click.argument('train_masks_np_file', type=click.STRING)
+@click.argument('train_imgs_0_np_file', type=click.STRING)
+@click.argument('train_masks_0_np_file', type=click.STRING)
+@click.argument('train_imgs_1_np_file', type=click.STRING)
+@click.argument('train_masks_1_np_file', type=click.STRING)
+@click.argument('train_imgs_2_np_file', type=click.STRING)
+@click.argument('train_masks_2_np_file', type=click.STRING)
 @click.argument('output', type=click.STRING)
 @click.option('--pretrained_model',
               type=click.STRING,
@@ -106,8 +109,12 @@ def dice_coef_loss(y_true, y_pred):
     type=click.STRING,
     default='',
     help='path to save results on test case evaluated per epoch of training')
-def main(train_imgs_np_file,
-         train_masks_np_file,
+def main(train_imgs_0_np_file,
+         train_masks_0_np_file,
+         train_imgs_1_np_file,
+         train_masks_1_np_file,
+         train_imgs_2_np_file,
+         train_masks_2_np_file,
          output,
          pretrained_model='',
          pretrained_adversarial_model='',
@@ -131,13 +138,12 @@ def main(train_imgs_np_file,
     num_classes = 4
     if not use_augmentation:
         total_epochs = 1000
-        generator_epochs = 30
+        generator_epochs = 100
     else:
         total_epochs = 1000
         generator_epochs = 100
     n_images_per_epoch = 616
     batch_size = 1
-    # batch_size = 16
     learn_rate = 2e-4
     learn_decay = 1e-8
 
@@ -156,14 +162,28 @@ def main(train_imgs_np_file,
         print("test_imgs_4_slice:",test_imgs_4.shape)
         
 
-    train_imgs = np.load(train_imgs_np_file)
-    train_masks = np.load(train_masks_np_file)
+    train_imgs = np.load(train_imgs_0_np_file)
+    train_masks = np.load(train_masks_0_np_file)
     print("load_img:",train_imgs.shape)
     print("load_mask:",train_masks.shape)
 
 
-    train_imgs_new  = train_imgs.copy()
+    train_imgs_add = np.load(train_imgs_1_np_file)
+    train_masks_add = np.load(train_masks_1_np_file)
+    print("load_img:",train_imgs_add.shape)
+    print("load_mask:",train_masks_add.shape)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add[:,:,:,np.newaxis]), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add[:,:,:,np.newaxis]), axis=0)
 
+
+    train_imgs_add = np.load(train_imgs_2_np_file)
+    train_masks_add = np.load(train_masks_2_np_file)
+    print("load_img:",train_imgs_add.shape)
+    print("load_mask:",train_masks_add.shape)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add[:,:,:,np.newaxis]), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add[:,:,:,np.newaxis]), axis=0)
+
+    train_imgs_new  = train_imgs.copy()
     train_masks_new  = train_masks.copy()
     count_i = 0
     count = 0
@@ -240,7 +260,7 @@ def main(train_imgs_np_file,
     elif use_cnn or use_cnn_discrimator:
         opt_discriminator = Adam(lr=(learn_rate))
         loss_function = 'categorical_crossentropy'
-        # loss_function = dice_coef_loss
+        #loss_function = dice_coef_loss
     logging.basicConfig(filename='UNET_loss.log', level=logging.INFO)
 
     #use cnn discrimator
@@ -350,7 +370,7 @@ def main(train_imgs_np_file,
                                     ("Gen logloss", gen_log_loss)])
              # ------------------------------
             # save weights on every 2nd epoch
-            if current_epoch % 10 == 0:
+            if current_epoch % 5 == 0:
                 gen_weights_path = os.path.join(
                     './weight/gen_weights_epoch_%s.h5' % (current_epoch))
                 generator_nn.save_weights(gen_weights_path, overwrite=True)
@@ -360,7 +380,7 @@ def main(train_imgs_np_file,
                 discriminator.save_weights(disc_weights_path, overwrite=True)
 
                 adversarial_weights_path = os.path.join(
-                    './weight/adversarial_weights_epoch_%s.h5' % (current_epoch))
+                    './weight/arg_adversarial_weights_epoch_%s.h5' % (current_epoch))
                 adversarial_model.save_weights(adversarial_weights_path, overwrite=True)
             if eval_per_epoch and current_epoch % 100 == 0:
                 pred_masks_1 = adversarial_model.predict(test_imgs_1)
