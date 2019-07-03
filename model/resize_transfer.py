@@ -208,8 +208,10 @@ for pp in range(start_number, end_number):
     if(round(min(x)/np.shape(gt_array)[1],2) < 0.2 or round(min(y)/np.shape(gt_array)[1],2)<0.2):
         print("errorerrorerrorerrorerrorerror")
         show_img(gt_array)
-  
-    gt_array_ = gt_array[:, new_count_x-3: new_count_x-3 + rows, new_count_y: new_count_y + cols]
+    #T2
+    # gt_array_ = gt_array[:, new_count_x-5: new_count_x-5 + rows, new_count_y-6: new_count_y-6 + cols]
+    #C0
+    gt_array_ = gt_array[:, new_count_x-1: new_count_x-1 + rows, new_count_y-3: new_count_y-3 + cols]
    
     
 
@@ -233,7 +235,8 @@ count_list = []
 for image in T2_gt_1ch:
     max_1 = np.max(image)
     
-    if max_1 < 2 or (3 in image and 2 not in image):
+    # if max_1 < 2 or (3 in image and 2 not in image):
+    if max_1 < 0 or max_1 > 3:
         delete_number = count_i - count
         train_imgs_new = np.delete(train_imgs_new, delete_number, axis=0)
         train_masks_new = np.delete(train_masks_new, delete_number, axis=0)
@@ -247,10 +250,10 @@ T2_gt_1ch = train_masks_new
 print("new_gt_array:", T2_gt_1ch.shape)
 
 
-sitk.WriteImage(sitk.GetImageFromArray(LGE_data_1ch),"transfer_C0_data.nii.gz")
-np.save('transfer_C0_data.npy', LGE_data_1ch)
+sitk.WriteImage(sitk.GetImageFromArray(LGE_data_1ch),"/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/C0_data_transfer_256_256.nii.gz")
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/C0_data_transfer_256_256.npy', LGE_data_1ch[:, :, :, np.newaxis])
 
-sitk.WriteImage(sitk.GetImageFromArray(T2_gt_1ch),"transfer_C0_gt.nii.gz")
-np.save('transfer_C0_gt.npy', T2_gt_1ch)
+sitk.WriteImage(sitk.GetImageFromArray(T2_gt_1ch),"/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/C0_gt_transfer_256_256.nii.gz")
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/C0_gt_transfer_256_256.npy', T2_gt_1ch[:, :, :, np.newaxis])
 
 print(img_count)

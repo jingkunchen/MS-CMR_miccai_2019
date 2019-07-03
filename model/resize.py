@@ -81,7 +81,6 @@ for pp in range(1, 6):
         image2[image2 == 500] = 0
         image2[image2 == 200] = 0
         image2[image2 == 600] = 1
-        print("1:",np.max(image))
 
         image = resize(image,new_shape, preserve_range =True)
         image1 = resize(image1,new_shape, preserve_range =True)
@@ -167,8 +166,8 @@ LGE_gt_1ch[LGE_gt_1ch == 500] = 1
 LGE_gt_1ch[LGE_gt_1ch == 200] = 2
 LGE_gt_1ch[LGE_gt_1ch == 600] = 3
 
-np.save('LGE_data_1ch_old.npy', LGE_data_1ch)
-np.save('LGE_gt_1ch_old.npy', LGE_gt_1ch)
+# np.save('LGE_data_1ch_old.npy', LGE_data_1ch)
+# np.save('LGE_gt_1ch_old.npy', LGE_gt_1ch)
 
 ##### T2
 T2_data_1ch = []
@@ -453,7 +452,7 @@ count_list = []
 for image in new_gt_array:
     max_1 = np.max(image)
     
-    if max_1 < 2:
+    if max_1 < 0:
         delete_number = count_i - count
         train_imgs_new = np.delete(train_imgs_new, delete_number, axis=0)
         train_masks_new = np.delete(train_masks_new, delete_number, axis=0)
@@ -467,11 +466,11 @@ new_gt_array = train_masks_new
 print("new_gt_array:", new_gt_array.shape)
 print("new_gt_array:", new_gt_array.shape)
 
-np.save('256_256_train_data.npy', new_data_array[:, :, :, np.newaxis])
-np.save('256_256_train_gt.npy', new_gt_array[:, :, :, np.newaxis])
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/resize_all_data.nii.gz"
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_resize_256_256.npy', new_data_array[:, :, :, np.newaxis])
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_resize_256_256.npy', new_gt_array[:, :, :, np.newaxis])
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_resize_256_256.nii.gz"
 sitk.WriteImage(sitk.GetImageFromArray(new_data_array),output_path)
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/resize_all_gt.nii.gz"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_resize_256_256.nii.gz"
 sitk.WriteImage(sitk.GetImageFromArray(new_gt_array),output_path)
 print("img_count:",img_count)
 print("new_gt_array:",new_gt_array.shape)
