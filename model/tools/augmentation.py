@@ -35,7 +35,7 @@ def augmentation(x, y):
     shear_matrix = np.array([[1, -np.sin(shear), 0],
                              [0, np.cos(shear), 0],
                              [0, 0, 1]])
-    zx, zy = np.random.uniform(.95, 1.05, 2)
+    zx, zy = np.random.uniform(.8, 1.5, 2)
     zoom_matrix = np.array([[zx, 0, 0],
                             [0, zy, 0],
                             [0, 0, 1]])

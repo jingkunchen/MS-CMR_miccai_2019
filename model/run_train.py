@@ -15,7 +15,7 @@ from keras.utils import to_categorical
 from keras.models import Model
 from keras.utils import generic_utils as keras_generic_utils
 from keras import backend as K
-# from keras.losses import categorical_crossentropy
+from keras.losses import categorical_crossentropy
 
 from models.DRUNet32f import get_model
 from models.CNN import build_discriminator
@@ -1148,7 +1148,6 @@ def main(train_imgs_0_np_file,
             with open(output_test_eval, 'w+') as outfile:
                 json.dump(history_1, outfile)
                 json.dump(history_2, outfile)
-
 
 if __name__ == "__main__":
     main()

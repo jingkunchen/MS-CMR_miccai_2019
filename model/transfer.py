@@ -22,7 +22,7 @@ T2_gt_1ch = []
 LGE_shape = []
 T2_shape = []
 
-gt_dir_1 = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/t2gt/'
+gt_dir_1 = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0gt/'
 lge_count = 0
 
 for pp in range(start_number, end_number):
@@ -41,7 +41,7 @@ for pp in range(start_number, end_number):
 T2_count = 0
 for pp in range(start_number, end_number):
     new_shape = (LGE_shape[pp-start_number][1],LGE_shape[pp-start_number][2])
-    gt_name = gt_dir_1 + 'patient' + str(pp) + '_T2_manual.nii.gz'
+    gt_name = gt_dir_1 + 'patient' + str(pp) + '_C0_manual.nii.gz'
     gt_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(gt_name)))
 
     gt_array = np.nan_to_num(gt_array, copy=True)
@@ -111,21 +111,19 @@ for pp in range(start_number, end_number):
                                  2):int((cols_o - cols) / 2) + cols]
     new_count_x_list.append(int((rows_o - rows) /2))
     new_count_y_list.append(int((cols_o - cols) /2))
-
-
     
     LGE_data_1ch.extend(np.float32(data_array_))
 
 LGE_data_1ch = np.asarray(LGE_data_1ch)
-sitk.WriteImage(sitk.GetImageFromArray(LGE_data_1ch),"test_image.nii.gz")
-np.save('transfer_T2_data.npy', LGE_data_1ch)
+# sitk.WriteImage(sitk.GetImageFromArray(LGE_data_1ch),"test_image.nii.gz")
+# np.save('transfer_T2_data.npy', LGE_data_1ch)
 
 T2_count = 0
 for pp in range(start_number, end_number):
     new_count_x = new_count_x_list[pp-start_number]
     new_count_y = new_count_y_list[pp-start_number]
     new_shape = (LGE_shape[pp-start_number][1],LGE_shape[pp-start_number][2])
-    gt_name = gt_dir_1 + 'patient' + str(pp) + '_T2_manual.nii.gz'
+    gt_name = gt_dir_1 + 'patient' + str(pp) + '_C0_manual.nii.gz'
     gt_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(gt_name)))
     gt_array = np.nan_to_num(gt_array, copy=True)
     print(gt_array.shape)
@@ -190,7 +188,6 @@ for pp in range(start_number, end_number):
         count += 1
     gt_array=np.array(new_gt_list)
     print("new_array:",gt_array.shape)
-    # sitk.WriteImage(sitk.GetImageFromArray(new_array),"test_gt.nii.gz")
     
     print(min(x), max(x),
           max(x) - min(x), round(min(x) / np.shape(gt_array)[1], 2),
@@ -201,18 +198,22 @@ for pp in range(start_number, end_number):
     if(round(min(x)/np.shape(gt_array)[1],2) < 0.2 or round(min(y)/np.shape(gt_array)[1],2)<0.2):
         print("errorerrorerrorerrorerrorerror")
         show_img(gt_array)
-  
-    gt_array_ = gt_array[:, new_count_x: new_count_x + rows, new_count_y: new_count_y + cols]
-   
-    
+    #C0
+    gt_array_ = gt_array[:, new_count_x-4: new_count_x-4 + rows, new_count_y-9: new_count_y-9 + cols]
+    #T2
+    # gt_array_ = gt_array[:, new_count_x-5: new_count_x-5 + rows, new_count_y-5: new_count_y-5 + cols]
+
 
     T2_gt_1ch.extend(np.float32(gt_array_))
 
 
 T2_gt_1ch = np.asarray(T2_gt_1ch)
-sitk.WriteImage(sitk.GetImageFromArray(T2_gt_1ch),"test_gt.nii.gz")
 T2_gt_1ch[T2_gt_1ch == 500] = 1
 T2_gt_1ch[T2_gt_1ch == 200] = 2
 T2_gt_1ch[T2_gt_1ch == 600] = 3
-np.save('transfer_T2_gt.npy', T2_gt_1ch)
+sitk.WriteImage(sitk.GetImageFromArray(LGE_data_1ch),"/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/transfer_data_C0_224_224.nii.gz")
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/transfer_data_C0_224_224.npy', LGE_data_1ch[:, :, :, np.newaxis])
+
+sitk.WriteImage(sitk.GetImageFromArray(T2_gt_1ch),"/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/transfer_gt_C0_224_224.nii.gz")
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/transfer_gt_C0_224_224.npy', T2_gt_1ch)
 print(img_count)

@@ -14,7 +14,6 @@ import skimage.io as io
 from skimage.morphology import square
 from skimage.morphology import dilation
 
-new_shape = (480,480)
 new_shape_1 = (480, 480)
 data_dir = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2lge/'
 thresh = 1
@@ -92,8 +91,8 @@ for pp in range(6, 46):
 LGE_data_1ch = np.asarray(LGE_data_1ch)
 print("LGE_data_1ch:",LGE_data_1ch.shape)
 
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/resize_lge_data_256_256.nii.gz"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/test_lge_data_resize_256_256.nii.gz"
 
 sitk.WriteImage(sitk.GetImageFromArray(LGE_data_1ch),output_path)
-np.save('resize_lge_data_256_256.npy', LGE_data_1ch)
+np.save('test_lge_data_resize_256_256.npy', LGE_data_1ch)
 # print(img_count)

@@ -17,8 +17,8 @@ from skimage.transform import resize
 
 data_dir = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2lge/'
 thresh = 1
-rows = 256
-cols = 256
+rows = 224
+cols = 224
 xmin = 1 
 xmax = 1
 ymin = 1
@@ -60,8 +60,11 @@ for pp in range(6, 46):
     data_array = data_array.astype(int)
     img_count +=data_array.shape[0]
     # show_img(gt_array)
-    print(np.shape(data_array))
     # print(np.shape(gt_array))
+    # count = 0
+    # for image in data_array:
+    #     print(pp,count+1,np.min(image))
+    #     count +=1
 
     x = []
     y = []
@@ -139,9 +142,9 @@ LGE_data_1ch = np.asarray(LGE_data_1ch)
 # LGE_gt_1ch[LGE_gt_1ch == 500] = 1
 # LGE_gt_1ch[LGE_gt_1ch == 200] = 2
 # LGE_gt_1ch[LGE_gt_1ch == 600] = 3
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/LGE_data_1ch_extra_256_256.nii.gz"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/LGE_test_224_224.nii.gz"
 sitk.WriteImage(sitk.GetImageFromArray(LGE_data_1ch),output_path)
-np.save('LGE_data_1ch_extra_256_256.npy', LGE_data_1ch)
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/LGE_test_224_224.npy', LGE_data_1ch)
 # np.save('LGE_gt_1ch_extra.npy', LGE_gt_1ch)
 # print("LGE_gt_1ch:",LGE_gt_1ch.shape)
 print(img_count)

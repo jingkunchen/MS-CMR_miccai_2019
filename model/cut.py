@@ -6,7 +6,7 @@ import os
 import numpy as np
 import SimpleITK as sitk
 import scipy.misc
-from skimage.transform import resize
+# from skimage.transform import resize
 # from scipy.misc import imresize
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -19,8 +19,8 @@ import skimage.io as io
 
 data_dir = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2lge/'
 thresh = 1
-rows = 256
-cols = 256
+rows = 224
+cols = 224
 xmin = 1 
 xmax = 1
 ymin = 1
@@ -57,6 +57,18 @@ for pp in range(1, 6):
     gt_array = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join(gt_name)))
     img_count +=gt_array.shape[0]
     print(np.shape(data_array))
+    
+         
+
+    # mask_edge = np.zeros(np.shape(gt_edge_array), dtype='float32')
+    # mask_edge[gt_edge_array >= thresh] = 1
+    # mask_edge[gt_edge_array < thresh] = 0
+    # for iii in range(np.shape(gt_edge_array)[0]):
+    #     mask_edge[iii, :, :] = scipy.ndimage.morphology.binary_fill_holes(
+    #         mask_edge[iii, :, :])  #fill the holes inside br
+    # gt_edge_array = gt_edge_array - np.mean(gt_edge_array[mask_edge == 1])
+    # gt_edge_array /= np.std(gt_edge_array[mask_edge == 1])
+    
 
     x = []
     y = []
@@ -72,7 +84,14 @@ for pp in range(1, 6):
                         y.append(j)
     print(min(x),max(x),max(x)-min(x),round(min(x)/np.shape(gt_array)[1],2), round(max(x)/np.shape(gt_array)[1],2))
     print(min(y),max(y),max(y)-min(y),round(min(y)/np.shape(gt_array)[1],2), round(max(y)/np.shape(gt_array)[1],2))
-
+    # if gt_array.shape[1] == 480 or  gt_array.shape[1] == 512:
+    #     data_array = data_array[:,136:360,136:360]
+    #     # data_array = data_array[:,120:344,120:344]
+    #     # data_array = data_array[:,120:344,136:360]
+    #     # data_array = data_array[:,136:360,120:344]
+    #     gt_array = gt_array[:,136:360,136:360]
+    # else:
+    #     print("error:",gt_array.shape)
     mask = np.zeros(np.shape(data_array), dtype='float32')
     mask[data_array >= thresh] = 1
     mask[data_array < thresh] = 0
@@ -81,6 +100,7 @@ for pp in range(1, 6):
             mask[iii, :, :])  #fill the holes inside br
     data_array = data_array - np.mean(data_array[mask == 1])
     data_array /= np.std(data_array[mask == 1])
+
     rows_o = np.shape(data_array)[1]
     cols_o = np.shape(data_array)[2]
 
@@ -94,9 +114,7 @@ for pp in range(1, 6):
                              2):int((rows_o - rows) / 2) + rows,
                          int((cols_o - cols) / 2):int((cols_o - cols) / 2) +
                          cols]
-    mask = mask[:,
-                int((rows_o - rows) / 2):int((rows_o - rows) / 2) + rows,
-                int((cols_o - cols) / 2):int((cols_o - cols) / 2) + cols]
+
 
     LGE_data_1ch.extend(np.float32(data_array_))
     LGE_gt_1ch.extend(np.float32(gt_array_))
@@ -106,6 +124,14 @@ LGE_gt_1ch = np.asarray(LGE_gt_1ch)
 LGE_gt_1ch[LGE_gt_1ch == 500] = 1
 LGE_gt_1ch[LGE_gt_1ch == 200] = 2
 LGE_gt_1ch[LGE_gt_1ch == 600] = 3
+gt_edge_array_list = []
+for image in LGE_gt_1ch:
+    sx = scipy.ndimage.sobel(image, axis=0, mode='constant')
+    sy = scipy.ndimage.sobel(image, axis=1, mode='constant')
+    sob = np.hypot(sx, sy)
+    gt_edge_array_list.append(sob)            
+gt_edge_array=np.array(gt_edge_array_list)
+
 
 # np.save('LGE_data_1ch.npy', LGE_data_1ch)
 # np.save('LGE_gt_1ch.npy', LGE_gt_1ch)
@@ -136,43 +162,43 @@ for pp in range(1, 36):
     print("idx:", pp)
     new_gt_list = []
     for image in gt_array:
-        if image.shape[0] < rows:
-            image = np.asarray(image)
-            image1 = image.copy()
-            image2 = image.copy()
-            image[image == 500] = 1
-            image[image == 200] = 0
-            image[image == 600] = 0
-            image1[image1 == 500] = 0
-            image1[image1 == 200] = 1
-            image1[image1 == 600] = 0
-            image2[image2 == 500] = 0
-            image2[image2 == 200] = 0
-            image2[image2 == 600] = 1
+        # if image.shape[0] < rows:
+            # image = np.asarray(image)
+            # image1 = image.copy()
+            # image2 = image.copy()
+            # image[image == 500] = 1
+            # image[image == 200] = 0
+            # image[image == 600] = 0
+            # image1[image1 == 500] = 0
+            # image1[image1 == 200] = 1
+            # image1[image1 == 600] = 0
+            # image2[image2 == 500] = 0
+            # image2[image2 == 200] = 0
+            # image2[image2 == 600] = 1
             
-            image = resize(image,(rows,cols), preserve_range =True)
-            image1 = resize(image1,(rows,cols), preserve_range =True)
-            image2 = resize(image2,(rows,cols), preserve_range =True)
-            image = np.around(image)
-            image1 = np.around(image1)
-            image2 = np.around(image2)
-            image = image.astype(np.int32)
-            image1 = image1.astype(np.int32)
-            image2 = image2.astype(np.int32)
+            # image = resize(image,(rows,cols), preserve_range =True)
+            # image1 = resize(image1,(rows,cols), preserve_range =True)
+            # image2 = resize(image2,(rows,cols), preserve_range =True)
+            # image = np.around(image)
+            # image1 = np.around(image1)
+            # image2 = np.around(image2)
+            # image = image.astype(np.int32)
+            # image1 = image1.astype(np.int32)
+            # image2 = image2.astype(np.int32)
 
             
-            image[image == 1] = 1
-            image1[image1 == 1] = 2
-            image2[image2 == 1] = 3
-            image = image +image1 +image2
-            [rows, cols] = image.shape
-            for i in range(rows):
-                for j in range(cols):
-                    if(image[i, j] >3) :
-                        print("--------error----------:", pp)
-            image[image == 1] = 500
-            image[image == 2] = 200
-            image[image == 3] = 600
+            # image[image == 1] = 1
+            # image1[image1 == 1] = 2
+            # image2[image2 == 1] = 3
+            # image = image +image1 +image2
+            # [rows, cols] = image.shape
+            # for i in range(rows):
+            #     for j in range(cols):
+            #         if(image[i, j] >3) :
+            #             print("--------error----------:", pp)
+            # image[image == 1] = 500
+            # image[image == 2] = 200
+            # image[image == 3] = 600
         
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
@@ -187,18 +213,18 @@ for pp in range(1, 36):
         new_gt_list.append(image)            
     gt_array=np.array(new_gt_list)
 
-    new_data_list = []
-    if data_array.shape[1] < rows:
-        print("idx:", pp)
-        for image in data_array:
-            image = np.asarray(image)
-            image = resize(image, (rows, cols), preserve_range =True)
-            image = np.around(image)
-            image = image.astype(np.int32)
-            new_data_list.append(image)
+    # new_data_list = []
+    # if data_array.shape[1] < rows:
+    #     print("idx:", pp)
+    #     for image in data_array:
+    #         image = np.asarray(image)
+    #         image = resize(image, (rows, cols), preserve_range =True)
+    #         image = np.around(image)
+    #         image = image.astype(np.int32)
+    #         new_data_list.append(image)
         
 
-        data_array=np.array(new_data_list)
+    #     data_array=np.array(new_data_list)
 
     print("new_array:",gt_array.shape)
     
@@ -210,7 +236,30 @@ for pp in range(1, 36):
           round(max(y) / np.shape(gt_array)[1], 2))
     if(round(min(x)/np.shape(gt_array)[1],2) < 0.2 or round(min(y)/np.shape(gt_array)[1],2)<0.2):
         print("errorerrorerrorerrorerrorerror")
-    # 256 288 240 240 224 
+    # 256 288 240 224 
+
+    # if int(gt_array.shape[1]) == 256:
+    #     data_array = data_array[:,16:240,16:240]
+    #     # data_array = data_array[:,8:232,8:232]
+    #     # data_array = data_array[:,8:232,16:240]
+    #     # data_array = data_array[:,16:240,8:232]
+    #     gt_array = gt_array[:,16:240,16:240]
+    # elif gt_array.shape[1] == 288:
+    #     data_array = data_array[:,32:256,32:256]
+    #     # data_array = data_array[:,16:240,16:240]
+    #     # data_array = data_array[:,16:240,32:256]
+    #     # data_array = data_array[:,32:256,16:240]
+    #     gt_array = gt_array[:,32:256,32:256]
+    # elif gt_array.shape[1] == 240:
+    #     data_array = data_array[:,8:232,8:232]
+    #     # data_array = data_array[:,4:228,4:228]
+    #     # data_array = data_array[:,4:228,8:232]
+    #     # data_array = data_array[:,8:232,4:228]
+    #     gt_array = gt_array[:,8:232,8:232]
+    # elif gt_array.shape[1] == 224:
+    #     pass
+    # else:
+    #     print("error:",gt_array.shape)
     mask = np.zeros(np.shape(data_array), dtype='float32')
     mask[data_array >= thresh] = 1
     mask[data_array < thresh] = 0
@@ -238,9 +287,6 @@ for pp in range(1, 36):
     print("np.max(data_array_):",np.max(data_array_))
     T2_data_1ch.extend(np.float32(data_array_))
     T2_gt_1ch.extend(np.float32(gt_array_))
-
-
-
 
 T2_data_1ch = np.asarray(T2_data_1ch)
 T2_gt_1ch = np.asarray(T2_gt_1ch)
@@ -275,43 +321,43 @@ for pp in range(1, 36):
 
     new_gt_list = []
     for image in gt_array:
-        if image.shape[0] < rows:
-            image = np.asarray(image)
-            image1 = image.copy()
-            image2 = image.copy()
-            image[image == 500] = 1
-            image[image == 200] = 0
-            image[image == 600] = 0
-            image1[image1 == 500] = 0
-            image1[image1 == 200] = 1
-            image1[image1 == 600] = 0
-            image2[image2 == 500] = 0
-            image2[image2 == 200] = 0
-            image2[image2 == 600] = 1
+        # if image.shape[0] < rows:
+        #     image = np.asarray(image)
+        #     image1 = image.copy()
+        #     image2 = image.copy()
+        #     image[image == 500] = 1
+        #     image[image == 200] = 0
+        #     image[image == 600] = 0
+        #     image1[image1 == 500] = 0
+        #     image1[image1 == 200] = 1
+        #     image1[image1 == 600] = 0
+        #     image2[image2 == 500] = 0
+        #     image2[image2 == 200] = 0
+        #     image2[image2 == 600] = 1
             
-            image = resize(image,(rows,cols), preserve_range =True)
-            image1 = resize(image1,(rows,cols), preserve_range =True)
-            image2 = resize(image2,(rows,cols), preserve_range =True)
-            image = np.around(image)
-            image1 = np.around(image1)
-            image2 = np.around(image2)
-            image = image.astype(np.int32)
-            image1 = image1.astype(np.int32)
-            image2 = image2.astype(np.int32)
+        #     image = resize(image,(rows,cols), preserve_range =True)
+        #     image1 = resize(image1,(rows,cols), preserve_range =True)
+        #     image2 = resize(image2,(rows,cols), preserve_range =True)
+        #     image = np.around(image)
+        #     image1 = np.around(image1)
+        #     image2 = np.around(image2)
+        #     image = image.astype(np.int32)
+        #     image1 = image1.astype(np.int32)
+        #     image2 = image2.astype(np.int32)
 
             
-            image[image == 1] = 1
-            image1[image1 == 1] = 2
-            image2[image2 == 1] = 3
-            image = image +image1 +image2
-            [rows, cols] = image.shape
-            for i in range(rows):
-                for j in range(cols):
-                    if(image[i, j] >3) :
-                        print("--------error----------:", pp)
-            image[image == 1] = 500
-            image[image == 2] = 200
-            image[image == 3] = 600
+        #     image[image == 1] = 1
+        #     image1[image1 == 1] = 2
+        #     image2[image2 == 1] = 3
+        #     image = image +image1 +image2
+        #     [rows, cols] = image.shape
+        #     for i in range(rows):
+        #         for j in range(cols):
+        #             if(image[i, j] >3) :
+        #                 print("--------error----------:", pp)
+        #     image[image == 1] = 500
+        #     image[image == 2] = 200
+        #     image[image == 3] = 600
         
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
@@ -326,20 +372,21 @@ for pp in range(1, 36):
         new_gt_list.append(image)            
     gt_array=np.array(new_gt_list)
 
-    new_data_list = []
-    if data_array.shape[1] < rows:
-        print("idx:", pp)
-        for image in data_array:
-            image = np.asarray(image)
-            image = resize(image, (rows, cols), preserve_range =True)
-            image = np.around(image)
-            image = image.astype(np.int32)
-            new_data_list.append(image)
+    
+    # new_data_list = []
+    # if data_array.shape[1] < rows:
+    #     print("idx:", pp)
+    #     for image in data_array:
+    #         image = np.asarray(image)
+    #         image = resize(image, (rows, cols), preserve_range =True)
+    #         image = np.around(image)
+    #         image = image.astype(np.int32)
+    #         new_data_list.append(image)
         
 
-        data_array=np.array(new_data_list)
+    #     data_array=np.array(new_data_list)
 
-    print("new_array:",gt_array.shape)
+    # print("new_array:",gt_array.shape)
 
 
  
@@ -352,7 +399,34 @@ for pp in range(1, 36):
           round(max(y) / np.shape(gt_array)[1], 2))
     
     # 320 288 240 256 224
-  
+    # if gt_array.shape[1] == 320:
+    #     data_array = data_array[:,64:288,64:288]
+    #     # data_array = data_array[:,32:256,32:256]
+    #     # data_array = data_array[:,32:256,64:288]
+    #     # data_array = data_array[:,64:288,32:256]
+    #     gt_array = gt_array[:,64:288,64:288]
+    # elif gt_array.shape[1] == 288:
+    #     data_array = data_array[:,32:256,32:256]
+    #     # data_array = data_array[:,16:240,16:240]
+    #     # data_array = data_array[:,16:240,32:256]
+    #     # data_array = data_array[:,32:256,16:240]
+    #     gt_array = gt_array[:,32:256,32:256]
+    # elif gt_array.shape[1] == 240:
+    #     data_array = data_array[:,8:232,8:232]
+    #     # data_array = data_array[:,4:244,4:244]
+    #     # data_array = data_array[:,4:244,8:232]
+    #     # data_array = data_array[:,8:232,4:244]
+    #     gt_array = gt_array[:,8:232,8:232]
+    # elif gt_array.shape[1] == 256:
+    #     data_array = data_array[:,16:240,16:240]
+    #     # data_array = data_array[:,8:232,8:232]
+    #     # data_array = data_array[:,8:232,16:240]
+    #     # data_array = data_array[:,16:240,8:232]
+    #     gt_array = gt_array[:,16:240,16:240]
+    # elif gt_array.shape[1] == 224:
+    #     pass
+    # else:
+    #     print("error:",gt_array.shape)
     mask = np.zeros(np.shape(data_array), dtype='float32')
     mask[data_array >= thresh] = 1
     mask[data_array < thresh] = 0
@@ -397,37 +471,37 @@ new_data_array = np.concatenate((new_data_array, T2_data_1ch), axis=0)
 new_gt_array = np.concatenate((LGE_gt_1ch, C0_gt_1ch), axis=0)
 new_gt_array = np.concatenate((new_gt_array, LGE_gt_1ch), axis=0)
 new_gt_array = np.concatenate((new_gt_array, T2_gt_1ch), axis=0)
-train_imgs_new  = new_data_array.copy()
-train_masks_new  = new_gt_array.copy()
-count_i = 0
-count = 0
-count_list = []
-for image in new_gt_array:
-    max_1 = np.max(image)
+# train_imgs_new  = new_data_array.copy()
+# train_masks_new  = new_gt_array.copy()
+# count_i = 0
+# count = 0
+# count_list = []
+# for image in new_gt_array:
+#     max_1 = np.max(image)
     
-    if max_1 < 0:
-        delete_number = count_i - count
-        train_imgs_new = np.delete(train_imgs_new, delete_number, axis=0)
-        train_masks_new = np.delete(train_masks_new, delete_number, axis=0)
+#     if max_1 < 0:
+#         delete_number = count_i - count
+#         train_imgs_new = np.delete(train_imgs_new, delete_number, axis=0)
+#         train_masks_new = np.delete(train_masks_new, delete_number, axis=0)
 
-        count += 1
-        print("empty:",count, count_i)
+#         count += 1
+#         print("empty:",count, count_i)
         
-    count_i +=1
-new_data_array = train_imgs_new
-new_gt_array = train_masks_new
-print("new_gt_array:", new_gt_array.shape)
-print("new_gt_array:", new_gt_array.shape)
+#     count_i +=1
+# new_data_array = train_imgs_new
+# new_gt_array = train_masks_new
+# print("new_gt_array:", new_gt_array.shape)
+# print("new_gt_array:", new_gt_array.shape)
 
 
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_or_256_256.nii.gz"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/all_data_or_224_224_0.nii.gz"
 sitk.WriteImage(sitk.GetImageFromArray(new_data_array),output_path)
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_or_256_256.nii.gz"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/all_gt_or_224_224_0.nii.gz"
 sitk.WriteImage(sitk.GetImageFromArray(new_gt_array),output_path)
 
 
-np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_or_256_256.npy', new_data_array[:, :, :, np.newaxis])
-np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_or_256_256.npy', new_gt_array[:, :, :, np.newaxis])
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/all_data_or_224_224_0.npy', new_data_array[:, :, :, np.newaxis])
+np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/all_gt_or_224_224_0.npy', new_gt_array[:, :, :, np.newaxis])
 print("img_count:",img_count)
 print("new_gt_array:",new_gt_array.shape)
 # print(xmin,xmax,ymin,ymax, xlenmin, ylenmin)

@@ -10,7 +10,7 @@ from skimage.transform import resize
 # from scipy.misc import imresize
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import scipy.ndimage
+from scipy import ndimage
 
 import cv2
 import time
@@ -130,6 +130,7 @@ for pp in range(1, 6):
 
     data_array=np.array(new_data_list)
 
+ 
     print(min(x),max(x),max(x)-min(x),round(min(x)/np.shape(gt_array)[1],2), round(max(x)/np.shape(gt_array)[1],2))
     print(min(y),max(y),max(y)-min(y),round(min(y)/np.shape(gt_array)[1],2), round(max(y)/np.shape(gt_array)[1],2))
    
@@ -466,11 +467,11 @@ new_gt_array = train_masks_new
 print("new_gt_array:", new_gt_array.shape)
 print("new_gt_array:", new_gt_array.shape)
 
-np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_resize_256_256.npy', new_data_array[:, :, :, np.newaxis])
-np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_resize_256_256.npy', new_gt_array[:, :, :, np.newaxis])
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_resize_256_256.nii.gz"
-sitk.WriteImage(sitk.GetImageFromArray(new_data_array),output_path)
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_resize_256_256.nii.gz"
-sitk.WriteImage(sitk.GetImageFromArray(new_gt_array),output_path)
+# np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_resize_256_256.npy', new_data_array[:, :, :, np.newaxis])
+# np.save('/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_resize_256_256.npy', new_gt_array[:, :, :, np.newaxis])
+# output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_data_resize_256_256.nii.gz"
+# sitk.WriteImage(sitk.GetImageFromArray(new_data_array),output_path)
+# output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/del/all_gt_resize_256_256.nii.gz"
+# sitk.WriteImage(sitk.GetImageFromArray(new_gt_array),output_path)
 print("img_count:",img_count)
 print("new_gt_array:",new_gt_array.shape)
