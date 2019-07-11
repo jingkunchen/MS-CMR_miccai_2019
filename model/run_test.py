@@ -13,7 +13,6 @@ from metrics import dice_coef, dice_coef_loss
 
 # label transform, 500-->1, 200-->2, 600-->3
 
-
 def get_eval_metrics(true_mask, pred_mask, output_file=''):
     true_mask_sitk = sitk.GetImageFromArray(true_mask)
     pred_mask_sitk = sitk.GetImageFromArray(pred_mask)

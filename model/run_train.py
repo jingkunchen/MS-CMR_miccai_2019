@@ -27,21 +27,28 @@ from models.dcgan import DCGAN
 from metrics import weighted_categorical_crossentropy
 from keras.optimizers import Adam, RMSprop
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
-
+smooth=1.
 def dice_coef_for_training(y_true, y_pred):
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
     return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-
-def dice_coef_loss(y_true, y_pred):
-    x0 = 1.-dice_coef_for_training(y_true[0], y_pred[0])
+'''
+def cross_dice_coef_loss(y_true, y_pred):
+    x0 = 1.-dice_coef_for_training(1-y_true[0], 1-y_pred[0])
     x1 = 1.-dice_coef_for_training(y_true[1], y_pred[1])
     x2 = 1.-dice_coef_for_training(y_true[2], y_pred[2])
     x3 = 1.-dice_coef_for_training(y_true[3], y_pred[3])
-    return x0+x1+x2+x3
+    return x0+x1+0.9*x2+0.8*x3
+'''
+def dice_coef_loss(y_true, y_pred):
+    x = 1.-dice_coef_for_training(y_true, y_pred)
+    return x
+
+def dice_cross_loss(y_true, y_pred):
+    return 0.9*categorical_crossentropy(y_true,y_pred) + 0.1*dice_coef_loss(y_true, y_pred)
 
 @click.command()
 @click.argument('train_imgs_0_np_file', type=click.STRING)
@@ -50,6 +57,14 @@ def dice_coef_loss(y_true, y_pred):
 @click.argument('train_masks_1_np_file', type=click.STRING)
 @click.argument('train_imgs_2_np_file', type=click.STRING)
 @click.argument('train_masks_2_np_file', type=click.STRING)
+@click.argument('train_imgs_3_np_file', type=click.STRING)
+@click.argument('train_masks_3_np_file', type=click.STRING)
+@click.argument('train_imgs_4_np_file', type=click.STRING)
+@click.argument('train_masks_4_np_file', type=click.STRING)
+@click.argument('train_imgs_5_np_file', type=click.STRING)
+@click.argument('train_masks_5_np_file', type=click.STRING)
+@click.argument('train_imgs_6_np_file', type=click.STRING)
+@click.argument('train_masks_6_np_file', type=click.STRING)
 @click.argument('output', type=click.STRING)
 @click.option('--pretrained_model',
               type=click.STRING,
@@ -115,6 +130,14 @@ def main(train_imgs_0_np_file,
          train_masks_1_np_file,
          train_imgs_2_np_file,
          train_masks_2_np_file,
+         train_imgs_3_np_file,
+         train_masks_3_np_file,
+         train_imgs_4_np_file,
+         train_masks_4_np_file,
+         train_imgs_5_np_file,
+         train_masks_5_np_file,
+         train_imgs_6_np_file,
+         train_masks_6_np_file,
          output,
          pretrained_model='',
          pretrained_adversarial_model='',
@@ -137,13 +160,13 @@ def main(train_imgs_0_np_file,
 
     num_classes = 4
     if not use_augmentation:
-        total_epochs = 1000
-        generator_epochs = 100
+        total_epochs = 20
+        generator_epochs = 30
     else:
         total_epochs = 1000
         generator_epochs = 100
     n_images_per_epoch = 616
-    batch_size = 1
+    batch_size = 16
     learn_rate = 2e-4
     learn_decay = 1e-8
 
@@ -166,23 +189,7 @@ def main(train_imgs_0_np_file,
     train_masks = np.load(train_masks_0_np_file)
     print("load_img:",train_imgs.shape)
     print("load_mask:",train_masks.shape)
-
-
-    train_imgs_add = np.load(train_imgs_1_np_file)
-    train_masks_add = np.load(train_masks_1_np_file)
-    print("load_img:",train_imgs_add.shape)
-    print("load_mask:",train_masks_add.shape)
-    train_imgs = np.concatenate((train_imgs, train_imgs_add[:,:,:,np.newaxis]), axis=0)
-    train_masks = np.concatenate((train_masks, train_masks_add[:,:,:,np.newaxis]), axis=0)
-
-
-    train_imgs_add = np.load(train_imgs_2_np_file)
-    train_masks_add = np.load(train_masks_2_np_file)
-    print("load_img:",train_imgs_add.shape)
-    print("load_mask:",train_masks_add.shape)
-    train_imgs = np.concatenate((train_imgs, train_imgs_add[:,:,:,np.newaxis]), axis=0)
-    train_masks = np.concatenate((train_masks, train_masks_add[:,:,:,np.newaxis]), axis=0)
-
+    
     train_imgs_new  = train_imgs.copy()
     train_masks_new  = train_masks.copy()
     count_i = 0
@@ -201,7 +208,89 @@ def main(train_imgs_0_np_file,
             delete_number = count_i - count
             train_imgs_new = np.delete(train_imgs_new, delete_number, axis=0)
             train_masks_new = np.delete(train_masks_new, delete_number, axis=0)
+            count += 1
+            print("empty:",count, count_i)
 
+        count_i +=1
+
+    train_imgs = train_imgs_new
+    train_masks = train_masks_new
+    print("train_imgs_result:",train_imgs.shape)
+    print("train_masks_result:",train_masks.shape)
+
+    samples_num = train_imgs.shape[0]
+    images_aug = np.zeros(train_imgs.shape, dtype=np.float32)
+    masks_aug = np.zeros(train_masks.shape, dtype=np.float32)
+    for i in range(samples_num):
+        images_aug[i], masks_aug[i] = augmentation(train_imgs[i],
+                                                       train_masks[i])
+
+    train_imgs = np.concatenate((train_imgs, images_aug), axis=0)
+    train_masks = np.concatenate((train_masks, masks_aug), axis=0)
+
+    train_imgs = np.concatenate((train_imgs, train_imgs), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks), axis=0)
+    train_imgs_add = np.load(train_imgs_1_np_file)
+    train_masks_add = np.load(train_masks_1_np_file)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add), axis=0)
+    print("load_img:",train_imgs_add.shape)
+    print("load_mask:",train_masks_add.shape)
+
+    train_imgs_add = np.load(train_imgs_2_np_file)
+    train_masks_add = np.load(train_masks_2_np_file)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add), axis=0)
+    print("load_img:",train_imgs_add.shape)
+    print("load_mask:",train_masks_add.shape)
+
+    train_imgs_add = np.load(train_imgs_3_np_file)
+    train_masks_add = np.load(train_masks_3_np_file)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add), axis=0)
+    print("load_img:",train_imgs.shape)
+    print("load_mask:",train_masks.shape)
+
+    train_imgs_add = np.load(train_imgs_4_np_file)
+    train_masks_add = np.load(train_masks_4_np_file)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add), axis=0)
+    print("load_img:",train_imgs.shape)
+    print("load_mask:",train_masks.shape)
+    
+#    train_imgs = np.concatenate((train_imgs, train_imgs), axis=0)
+#    train_masks = np.concatenate((train_masks, train_masks), axis=0)
+    train_imgs_add = np.load(train_imgs_5_np_file)
+    train_masks_add = np.load(train_masks_5_np_file)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add[:, :, :, np.newaxis]), axis=0)
+    print("load_img:",train_imgs.shape)
+    print("load_mask:",train_masks.shape)
+    
+    train_imgs_add = np.load(train_imgs_6_np_file)
+    train_masks_add = np.load(train_masks_6_np_file)
+    train_imgs = np.concatenate((train_imgs, train_imgs_add), axis=0)
+    train_masks = np.concatenate((train_masks, train_masks_add[:, :, :, np.newaxis]), axis=0)
+    print("load_img:",train_imgs.shape)
+    print("load_mask:",train_masks.shape)
+    train_imgs_new  = train_imgs.copy()
+    train_masks_new  = train_masks.copy()
+    count_i = 0
+    count = 0
+    count_list = []
+    for i in train_masks:
+        count_j = 0
+        sum = 0
+        for j in i:
+            count_j +=1
+            count_k = 0
+            for k in j:
+                count_k +=1
+                sum +=int(k[0])
+        if sum == 0:
+            delete_number = count_i - count
+            train_imgs_new = np.delete(train_imgs_new, delete_number, axis=0)
+            train_masks_new = np.delete(train_masks_new, delete_number, axis=0)
             count += 1
             print("empty:",count, count_i)
             
@@ -212,9 +301,9 @@ def main(train_imgs_0_np_file,
     print("train_masks_result:",train_masks.shape)
 
     if use_weighted_crossentropy:
-        class_weights = class_weight.compute_class_weight(
-            'balanced', np.unique(train_masks), train_masks.flatten())
-
+        #class_weights = class_weight.compute_class_weight(
+        #    'balanced', np.unique(train_masks), train_masks.flatten())
+        class_weights = np.array([0.5,5,3,5])
     channels_num = train_imgs.shape[-1]
     img_shape = (train_imgs.shape[1], train_imgs.shape[2], channels_num)
     mask_shape = (train_masks.shape[1], train_masks.shape[2], num_classes)
@@ -244,23 +333,24 @@ def main(train_imgs_0_np_file,
 
     else:
         train_masks_cat = to_categorical(train_masks, num_classes)
+        
         num_classes = 4
         print("train_masks_cat:", train_masks_cat.shape)
     
     if use_weighted_crossentropy:
         opt_discriminator = Adam(lr=(learn_rate))
         loss_function = weighted_categorical_crossentropy(class_weights)
+    else:
+        loss_function = dice_cross_loss
+        #loss_function = 'categorical_crossentropy'
     if use_patch_gan or use_patch_gan_discrimator:
         opt_discriminator = Adam(lr=learn_rate,
                                  beta_1=0.9,
                                  beta_2=0.999,
                                  epsilon=1e-08)
         opt_dcgan = Adam(lr=learn_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
-        loss_function = 'categorical_crossentropy'
     elif use_cnn or use_cnn_discrimator:
         opt_discriminator = Adam(lr=(learn_rate))
-        loss_function = 'categorical_crossentropy'
-        #loss_function = dice_coef_loss
     logging.basicConfig(filename='UNET_loss.log', level=logging.INFO)
 
     #use cnn discrimator
@@ -334,7 +424,7 @@ def main(train_imgs_0_np_file,
             output_weights_file = output + '/' + 'weight_' + str(
                 current_epoch) + '.h5'
             batch_idxs = len(train_imgs) // batch_size
-            progbar = keras_generic_utils.Progbar(batch_idxs)
+            progbar = keras_generic_utils.Progbar(len(train_imgs))
 
             for idx in range(0, batch_idxs):
                 img_batch = train_imgs[idx * batch_size:(idx + 1) * batch_size]
@@ -1148,6 +1238,7 @@ def main(train_imgs_0_np_file,
             with open(output_test_eval, 'w+') as outfile:
                 json.dump(history_1, outfile)
                 json.dump(history_2, outfile)
+
 
 if __name__ == "__main__":
     main()
