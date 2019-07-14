@@ -23,8 +23,8 @@ learn_decay = 1e-8
 test_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/LGE_test_224_224.npy"
 patient_path = "/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0t2lge"
 
-weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/transfer/argumentation/adversarial_weights_epoch_20.h5"
-output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/final/v2/patient.nii.gz"
+weight_file = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/new/arg_adversarial_weights_epoch_20_9_7_8_8_notra.h5"
+output_path = "/Users/chenjingkun/Documents/result/MS-CMR_miccai_2019_result/dice/final/v3/patient.nii.gz"
 
 smooth=1.
 def dice_coef_for_training(y_true, y_pred):

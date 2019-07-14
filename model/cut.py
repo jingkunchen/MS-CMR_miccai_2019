@@ -44,7 +44,7 @@ if not os.path.exists(img_dir):
     os.makedirs(img_dir)
 gt_dir_1 = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/lgegt/'
 lge_list = []
-for pp in range(1, 6):
+for pp in range(1, 4):
 
     data_name = data_dir + 'patient' + str(pp) + '_LGE.nii.gz'
     gt_name = gt_dir_1 + 'patient' + str(pp) + '_LGE_manual.nii.gz'
@@ -176,7 +176,7 @@ if not os.path.exists(img_dir):
     os.makedirs(img_dir)
 gt_dir_1 = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/t2gt/'
 
-for pp in range(1, 36):
+for pp in range(1, 31):
     data_name = data_dir + 'patient' + str(pp) + '_T2.nii.gz'
     gt_name = gt_dir_1 + 'patient' + str(pp) + '_T2_manual.nii.gz'
 
@@ -335,7 +335,7 @@ if not os.path.exists(img_dir):
     os.makedirs(img_dir)
 gt_dir_1 = '/Users/chenjingkun/Documents/data/C0LET2_nii45_for_challenge19/c0gt/'
 
-for pp in range(1, 36):
+for pp in range(1, 31):
     data_name = data_dir + 'patient' + str(pp) + '_C0.nii.gz'
     gt_name = gt_dir_1 + 'patient' + str(pp) + '_C0_manual.nii.gz'
     data_array = sitk.GetArrayFromImage(sitk.ReadImage(
@@ -459,8 +459,8 @@ C0_gt_1ch = np.asarray(C0_gt_1ch)
 C0_gt_1ch[C0_gt_1ch == 500] = 1
 C0_gt_1ch[C0_gt_1ch == 200] = 2
 C0_gt_1ch[C0_gt_1ch == 600] = 3
-np.save('C0_data_1ch.npy', C0_data_1ch)
-np.save('C0_gt_1ch.npy', C0_gt_1ch)
+# np.save('C0_data_1ch.npy', C0_data_1ch)
+# np.save('C0_gt_1ch.npy', C0_gt_1ch)
 
 new_data_array = np.concatenate((LGE_data_1ch, C0_data_1ch), axis=0)
 new_data_array = np.concatenate((new_data_array, T2_data_1ch), axis=0)
