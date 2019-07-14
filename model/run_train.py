@@ -258,8 +258,7 @@ def main(train_imgs_0_np_file,
     print("load_img:",train_imgs.shape)
     print("load_mask:",train_masks.shape)
     
-#    train_imgs = np.concatenate((train_imgs, train_imgs), axis=0)
-#    train_masks = np.concatenate((train_masks, train_masks), axis=0)
+
     train_imgs_add = np.load(train_imgs_5_np_file)
     train_masks_add = np.load(train_masks_5_np_file)
     train_imgs = np.concatenate((train_imgs, train_imgs_add), axis=0)
