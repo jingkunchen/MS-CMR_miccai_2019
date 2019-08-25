@@ -7,42 +7,27 @@
 
 Created by: [Jingkun Chen](http://blog.ebuystorm.com/aboutme.html).
 
-[![Github](https://github.com/jingkunchen/MS-CMR_miccai_2019)](Code Climate URL goes here)
+[![Github](https://github.com/jingkunchen/MS-CMR_miccai_2019)]
 
 ## Description
 **Application Name Here** description can be listed here.
 
 ## Installation
+train data:
+train_data.npy train_gt.npy
+test data:
+test_4_data.npy test_4_gt.npy test_5_data.npy test_5_gt.npy
 
-Add it to your Gemfile:
+Run the :
 
-```ruby
-gem 'my_example_gem'
-```
-
-Run the following command to install it:
-
-```console
-bundle install
-```
-
-Run the generator:
-
-```console
-rails generate my_example_gem:install
-```
 
 
 ## Usage
 
-Put the usage explanation here
+Run the :
 
 ```erb
-<%= your_code_goes @here do |f| %>
-  <%= f.input :example %>
-  <%= f.input :example %>
-  <%= f.button :example %>
-<% end %>
+python3 run_train.py train_data.npy train_gt.npy weight test_4_data.npy test_4_gt.npy test_5_data.npy test_5_gt.npy --output_test_eval eval.log --use_cnn True
 ```
 
 
@@ -62,18 +47,6 @@ Screenshots of your application below:
 ![Screenshot 2](http://placekitten.com/400/300)
 
 
-### Known Issues
-
-If you discover any bugs, feel free to create an issue on GitHub fork and
-send us a pull request.
-
-[Issues List](Github Issues List URL goes here).
-
-## Authors
-
-* Your Name (Your Github URL goes here)
-* Additional Author's name (Their Github URL goes here)
-
 
 ## Contributing
 
@@ -86,4 +59,7 @@ send us a pull request.
 
 ## License
 
-Your Licensing Information goes here. Example: MIT/X11.
+<!-- LICENSE -->
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
