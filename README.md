@@ -5,9 +5,9 @@
 
 -->
 
-Created by: [Jingkun Chen](author URL goes here).
+Created by: [Jingkun Chen](http://blog.ebuystorm.com/aboutme.html).
 
-[![https://github.com/jingkunchen/MS-CMR_miccai_2019](Code Climate Badge IMG URL goes here)](Code Climate URL goes here)
+[![Github](https://github.com/jingkunchen/MS-CMR_miccai_2019)](Code Climate URL goes here)
 
 ## Description
 **Application Name Here** description can be listed here.
