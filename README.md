@@ -29,16 +29,8 @@ python3 run_train.py train_data.npy train_gt.npy weight test_4_data.npy test_4_g
 ```
 
 
-## Configuration
-
-This block of text should explain how to configure your application:
-
-`rails generate my_example_gem:install`
-
-
 ## Information
 
-Screenshots of your application below:
 
 The whole model:
 ![Screenshot 1](http://blog.ebuystorm.com/file/image/miccai_2019_segmentor.png)
