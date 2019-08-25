@@ -55,8 +55,6 @@ The result:
 5. Create new Pull Request
 
 
-## License
-
 <!-- LICENSE -->
 ## License
 
